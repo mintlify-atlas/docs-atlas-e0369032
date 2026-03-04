@@ -1,0 +1,209 @@
+---
+title: Provider
+description: AI SDK provider implementation for Lexa
+---
+
+The Lexa provider implements the Vercel AI SDK provider interface, allowing seamless integration with AI SDK workflows.
+
+## LexaProvider
+
+The main provider class that implements the AI SDK `ProviderV2` interface.
+
+```typescript
+class LexaProvider implements ProviderV2
+```
+
+### Constructor
+
+```typescript
+new LexaProvider(
+  config: LexaProviderConfig,
+  settings?: LexaProviderSettings
+)
+```
+
+<ParamField path="config" type="LexaProviderConfig" required>
+  Provider configuration object
+  
+  <ParamField path="apiKey" type="string" required>
+    API key for authentication
+  </ParamField>
+  
+  <ParamField path="provider" type="string" required>
+    Provider name for identification
+  </ParamField>
+  
+  <ParamField path="baseURL" type="string">
+    The base URL for the Lexa API (default: 'https://www.lexa.chat/api')
+  </ParamField>
+  
+  <ParamField path="headers" type="Record<string, string>">
+    Default headers to include in requests
+  </ParamField>
+</ParamField>
+
+<ParamField path="settings" type="LexaProviderSettings">
+  Optional provider settings
+  
+  <ParamField path="temperature" type="number">
+    Default temperature for text generation (0-2)
+  </ParamField>
+  
+  <ParamField path="maxOutputTokens" type="number">
+    Default maximum output tokens
+  </ParamField>
+  
+  <ParamField path="stopSequences" type="string[]">
+    Default stop sequences
+  </ParamField>
+  
+  <ParamField path="enableStreaming" type="boolean">
+    Whether to enable streaming by default
+  </ParamField>
+</ParamField>
+
+### Methods
+
+#### languageModel()
+
+Creates a language model instance for the specified model ID.
+
+```typescript
+languageModel(modelId: string): LanguageModelV2
+```
+
+<ParamField path="modelId" type="string" required>
+  The ID of the model to use (e.g., 'lexa-mml', 'lexa-x1', 'lexa-rho')
+</ParamField>
+
+<ResponseField name="return" type="LanguageModelV2">
+  A language model instance implementing the AI SDK LanguageModelV2 interface
+</ResponseField>
+
+#### textEmbeddingModel()
+
+```typescript
+textEmbeddingModel(modelId: string): EmbeddingModelV2<string>
+```
+
+<Tip>Text embedding models are not yet supported. This method will throw an error.</Tip>
+
+#### imageModel()
+
+```typescript
+imageModel(modelId: string): ImageModelV2
+```
+
+<Tip>Image generation models are not yet supported. This method will throw an error.</Tip>
+
+## createLexaProvider()
+
+Factory function for easier provider instantiation.
+
+```typescript
+function createLexaProvider(
+  config: LexaProviderConfig,
+  settings?: LexaProviderSettings
+): LexaProvider
+```
+
+<ParamField path="config" type="LexaProviderConfig" required>
+  Provider configuration object (see LexaProvider constructor)
+</ParamField>
+
+<ParamField path="settings" type="LexaProviderSettings">
+  Optional provider settings (see LexaProvider constructor)
+</ParamField>
+
+<ResponseField name="return" type="LexaProvider">
+  A new LexaProvider instance
+</ResponseField>
+
+### Example
+
+```typescript
+import { createLexaProvider } from 'lexa-js-sdk';
+import { generateText } from 'ai';
+
+const provider = createLexaProvider(
+  {
+    apiKey: 'your-api-key',
+    provider: 'lexa',
+    baseURL: 'https://www.lexa.chat/api',
+  },
+  {
+    temperature: 0.7,
+    maxOutputTokens: 2000,
+  }
+);
+
+const model = provider.languageModel('lexa-mml');
+
+const { text } = await generateText({
+  model,
+  prompt: 'Explain quantum computing',
+});
+```
+
+## LEXA_MODELS
+
+Predefined model configurations for all available Lexa models.
+
+```typescript
+const LEXA_MODELS: {
+  'lexa-mml': {
+    name: string;
+    description: string;
+    contextWindow: number;
+    maxTokens: number;
+  };
+  'lexa-x1': { /* ... */ };
+  'lexa-rho': { /* ... */ };
+}
+```
+
+### Available Models
+
+<ParamField path="lexa-mml" type="object">
+  Lexa MML - Multimodal model with vision capabilities
+  
+  <ResponseField name="contextWindow" type="number">8192</ResponseField>
+  <ResponseField name="maxTokens" type="number">4096</ResponseField>
+</ParamField>
+
+<ParamField path="lexa-x1" type="object">
+  Lexa X1 - Fast, lightweight text-based model
+  
+  <ResponseField name="contextWindow" type="number">4096</ResponseField>
+  <ResponseField name="maxTokens" type="number">2048</ResponseField>
+</ParamField>
+
+<ParamField path="lexa-rho" type="object">
+  Lexa Rho - Reasoning model with enhanced capabilities
+  
+  <ResponseField name="contextWindow" type="number">16384</ResponseField>
+  <ResponseField name="maxTokens" type="number">8192</ResponseField>
+</ParamField>
+
+### Example
+
+```typescript
+import { LEXA_MODELS } from 'lexa-js-sdk';
+
+console.log(LEXA_MODELS['lexa-mml']);
+// {
+//   name: 'Lexa MML',
+//   description: 'Lexa MML - Multimodal model with vision capabilities',
+//   contextWindow: 8192,
+//   maxTokens: 4096
+// }
+```
+
+## LexaModelId
+
+Type alias for all valid Lexa model identifiers.
+
+```typescript
+type LexaModelId = keyof typeof LEXA_MODELS;
+// 'lexa-mml' | 'lexa-x1' | 'lexa-rho'
+```

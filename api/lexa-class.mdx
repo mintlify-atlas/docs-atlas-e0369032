@@ -1,0 +1,231 @@
+---
+title: Lexa Class
+description: OpenAI-like interface for the Lexa JS SDK
+---
+
+The `Lexa` class provides an OpenAI-compatible interface for easy integration with existing code. It wraps the provider functionality with familiar methods.
+
+## Constructor
+
+Creates a new Lexa instance with the specified API key and configuration.
+
+```typescript
+new Lexa(apiKey: string, config?: Partial<LexaProviderConfig>)
+```
+
+<ParamField path="apiKey" type="string" required>
+  Your Lexa API key for authentication
+</ParamField>
+
+<ParamField path="config" type="Partial<LexaProviderConfig>">
+  Optional configuration object
+  
+  <ParamField path="provider" type="string">
+    Provider name for identification (default: 'lexa')
+  </ParamField>
+  
+  <ParamField path="baseURL" type="string">
+    The base URL for the Lexa API (default: 'https://www.lexa.chat/api')
+  </ParamField>
+  
+  <ParamField path="headers" type="Record<string, string>">
+    Default headers to include in requests
+  </ParamField>
+</ParamField>
+
+### Example
+
+```typescript
+import Lexa from 'lexa-js-sdk';
+
+const lexa = new Lexa('your-api-key', {
+  baseURL: 'https://custom-endpoint.com/api',
+});
+```
+
+## Methods
+
+### chat()
+
+Performs an OpenAI-like chat completion request.
+
+```typescript
+async chat(options: {
+  messages: Array<{
+    role: 'system' | 'user' | 'assistant';
+    content: string;
+  }>;
+  model?: string;
+  temperature?: number;
+  max_tokens?: number;
+  stream?: boolean;
+}): Promise<ChatResponse | StreamResponse>
+```
+
+<ParamField path="options" type="object" required>
+  Chat completion options
+  
+  <ParamField path="messages" type="Array" required>
+    Array of messages in the conversation
+    
+    <ParamField path="role" type="'system' | 'user' | 'assistant'" required>
+      The role of the message sender
+    </ParamField>
+    
+    <ParamField path="content" type="string" required>
+      The message content
+    </ParamField>
+  </ParamField>
+  
+  <ParamField path="model" type="string">
+    Model ID to use (default: 'lexa-mml')
+  </ParamField>
+  
+  <ParamField path="temperature" type="number">
+    Controls randomness in the output (0-2)
+  </ParamField>
+  
+  <ParamField path="max_tokens" type="number">
+    Maximum number of tokens to generate
+  </ParamField>
+  
+  <ParamField path="stream" type="boolean">
+    Whether to stream the response (default: false)
+  </ParamField>
+</ParamField>
+
+#### Non-streaming Response
+
+When `stream: false` (default), returns an OpenAI-like response:
+
+<ResponseField name="choices" type="Array" required>
+  Array of completion choices
+  
+  <ResponseField name="message" type="object" required>
+    The generated message
+    
+    <ResponseField name="role" type="string">
+      Always 'assistant'
+    </ResponseField>
+    
+    <ResponseField name="content" type="string">
+      The generated text content
+    </ResponseField>
+  </ResponseField>
+  
+  <ResponseField name="finish_reason" type="string">
+    Reason for completion: 'stop', 'length', 'tool-calls', or 'unknown'
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="usage" type="object">
+  Token usage information
+  
+  <ResponseField name="inputTokens" type="number">
+    Number of tokens in the prompt
+  </ResponseField>
+  
+  <ResponseField name="outputTokens" type="number">
+    Number of tokens in the completion
+  </ResponseField>
+  
+  <ResponseField name="totalTokens" type="number">
+    Total tokens used
+  </ResponseField>
+</ResponseField>
+
+#### Streaming Response
+
+When `stream: true`, returns:
+
+<ResponseField name="stream" type="ReadableStream">
+  A ReadableStream that emits text deltas
+</ResponseField>
+
+### Example
+
+```typescript
+const lexa = new Lexa('your-api-key');
+
+// Non-streaming
+const response = await lexa.chat({
+  messages: [
+    { role: 'system', content: 'You are a helpful assistant.' },
+    { role: 'user', content: 'Hello!' }
+  ],
+  model: 'lexa-mml',
+  temperature: 0.7,
+  max_tokens: 100,
+});
+
+console.log(response.choices[0].message.content);
+
+// Streaming
+const streamResponse = await lexa.chat({
+  messages: [{ role: 'user', content: 'Tell me a story' }],
+  stream: true,
+});
+
+for await (const chunk of streamResponse.stream) {
+  console.log(chunk);
+}
+```
+
+### models()
+
+Returns a list of available Lexa models in OpenAI-compatible format.
+
+```typescript
+async models(): Promise<{
+  data: Array<{
+    id: string;
+    object: string;
+    created: number;
+    owned_by: string;
+  }>;
+}>
+```
+
+<ResponseField name="data" type="Array" required>
+  Array of available models
+  
+  <ResponseField name="id" type="string">
+    Model identifier
+  </ResponseField>
+  
+  <ResponseField name="object" type="string">
+    Always 'model'
+  </ResponseField>
+  
+  <ResponseField name="created" type="number">
+    Timestamp of model creation
+  </ResponseField>
+  
+  <ResponseField name="owned_by" type="string">
+    Always 'lexa'
+  </ResponseField>
+</ResponseField>
+
+### Example
+
+```typescript
+const lexa = new Lexa('your-api-key');
+const models = await lexa.models();
+
+console.log(models.data);
+// [
+//   { id: 'lexa-mml', object: 'model', created: 1234567890, owned_by: 'lexa' },
+//   { id: 'lexa-x1', object: 'model', created: 1234567890, owned_by: 'lexa' },
+//   { id: 'lexa-rho', object: 'model', created: 1234567890, owned_by: 'lexa' },
+//   { id: 'linkedin-post-writer', object: 'model', created: 1234567890, owned_by: 'lexa' }
+// ]
+```
+
+## Available Models
+
+The following models are available through the Lexa SDK:
+
+- `lexa-mml` - Multimodal model with vision capabilities
+- `lexa-x1` - Fast, lightweight text-based model
+- `lexa-rho` - Reasoning model with enhanced capabilities
+- `linkedin-post-writer` - Specialized model for LinkedIn content

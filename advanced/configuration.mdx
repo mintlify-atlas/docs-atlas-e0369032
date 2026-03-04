@@ -1,0 +1,308 @@
+---
+title: Configuration
+description: Configure LexaProvider with custom settings, base URLs, and headers
+---
+
+The Lexa SDK provides flexible configuration options through the `LexaProviderConfig` and `LexaProviderSettings` interfaces.
+
+## LexaProviderConfig
+
+The `LexaProviderConfig` interface defines the core configuration required to connect to the Lexa API:
+
+```typescript
+interface LexaProviderConfig {
+  /**
+   * The base URL for the Lexa API
+   */
+  baseURL?: string;
+  
+  /**
+   * API key for authentication (required)
+   */
+  apiKey: string;
+  
+  /**
+   * Provider name for identification
+   */
+  provider: string;
+  
+  /**
+   * Default headers to include in requests
+   */
+  headers?: Record<string, string>;
+}
+```
+
+### apiKey (required)
+
+Your Lexa API key for authentication. Get your API key from the [Lexa dashboard](https://www.lexa.chat).
+
+```typescript
+import { createLexaProvider } from '@robilabs/lexa';
+
+const provider = createLexaProvider({
+  apiKey: process.env.LEXA_API_KEY,
+  provider: 'lexa',
+});
+```
+
+<Warning>
+Never hardcode your API key in your source code. Always use environment variables or secure configuration management.
+</Warning>
+
+### baseURL (optional)
+
+Customize the API endpoint if you're using a different Lexa instance or proxy.
+
+**Default:** `https://www.lexa.chat/api`
+
+```typescript
+const provider = createLexaProvider({
+  apiKey: process.env.LEXA_API_KEY,
+  provider: 'lexa',
+  baseURL: 'https://custom.lexa.instance/api',
+});
+```
+
+### provider (required)
+
+A string identifier for the provider. This is typically set to `'lexa'`.
+
+```typescript
+const provider = createLexaProvider({
+  apiKey: process.env.LEXA_API_KEY,
+  provider: 'lexa',
+});
+```
+
+### headers (optional)
+
+Add custom headers to all API requests. This is useful for adding custom authentication, tracking, or routing headers.
+
+```typescript
+const provider = createLexaProvider({
+  apiKey: process.env.LEXA_API_KEY,
+  provider: 'lexa',
+  headers: {
+    'X-Custom-Header': 'custom-value',
+    'X-Request-ID': crypto.randomUUID(),
+  },
+});
+```
+
+<Info>
+The `Authorization` header is automatically added with your API key as a Bearer token. The `Content-Type` header is set to `application/json` for all requests.
+</Info>
+
+## LexaProviderSettings
+
+The `LexaProviderSettings` interface allows you to configure default behavior for model generation:
+
+```typescript
+interface LexaProviderSettings {
+  /**
+   * Default temperature for text generation
+   */
+  temperature?: number;
+  
+  /**
+   * Default maximum output tokens
+   */
+  maxOutputTokens?: number;
+  
+  /**
+   * Default stop sequences
+   */
+  stopSequences?: string[];
+  
+  /**
+   * Whether to enable streaming by default
+   */
+  enableStreaming?: boolean;
+}
+```
+
+### temperature (optional)
+
+Controls randomness in the model's output. Higher values make output more random, lower values make it more focused and deterministic.
+
+**Range:** 0.0 to 2.0  
+**Default:** 0.7
+
+```typescript
+const provider = createLexaProvider(
+  {
+    apiKey: process.env.LEXA_API_KEY,
+    provider: 'lexa',
+  },
+  {
+    temperature: 0.9, // More creative responses
+  }
+);
+```
+
+### maxOutputTokens (optional)
+
+Sets the maximum number of tokens to generate in the response.
+
+**Default:** 1000
+
+```typescript
+const provider = createLexaProvider(
+  {
+    apiKey: process.env.LEXA_API_KEY,
+    provider: 'lexa',
+  },
+  {
+    maxOutputTokens: 2048, // Allow longer responses
+  }
+);
+```
+
+<Info>
+The actual maximum depends on the model's capabilities. Check `LEXA_MODELS` for each model's `maxTokens` limit.
+</Info>
+
+### stopSequences (optional)
+
+Define sequences that will cause the model to stop generating further tokens.
+
+```typescript
+const provider = createLexaProvider(
+  {
+    apiKey: process.env.LEXA_API_KEY,
+    provider: 'lexa',
+  },
+  {
+    stopSequences: ['END', '###'],
+  }
+);
+```
+
+### enableStreaming (optional)
+
+Set whether streaming should be enabled by default.
+
+**Default:** false
+
+```typescript
+const provider = createLexaProvider(
+  {
+    apiKey: process.env.LEXA_API_KEY,
+    provider: 'lexa',
+  },
+  {
+    enableStreaming: true,
+  }
+);
+```
+
+<Note>
+This setting is currently informational. Streaming is controlled at the method level (`doGenerate` vs `doStream`).
+</Note>
+
+## Complete Configuration Example
+
+Here's a comprehensive example with all configuration options:
+
+```typescript
+import { createLexaProvider } from '@robilabs/lexa';
+
+const provider = createLexaProvider(
+  // LexaProviderConfig
+  {
+    apiKey: process.env.LEXA_API_KEY,
+    provider: 'lexa',
+    baseURL: 'https://www.lexa.chat/api',
+    headers: {
+      'X-Application-Name': 'my-app',
+      'X-Environment': 'production',
+    },
+  },
+  // LexaProviderSettings
+  {
+    temperature: 0.8,
+    maxOutputTokens: 2048,
+    stopSequences: ['END'],
+    enableStreaming: false,
+  }
+);
+
+// Use the provider
+const model = provider.languageModel('lexa-mml');
+```
+
+## Per-Request Configuration
+
+You can override default settings on a per-request basis:
+
+```typescript
+const provider = createLexaProvider(
+  {
+    apiKey: process.env.LEXA_API_KEY,
+    provider: 'lexa',
+  },
+  {
+    temperature: 0.7, // Default
+    maxOutputTokens: 1000, // Default
+  }
+);
+
+const model = provider.languageModel('lexa-mml');
+
+// Override settings for this specific call
+const result = await model.doGenerate({
+  prompt: [/* ... */],
+  temperature: 0.9, // Override default 0.7
+  maxOutputTokens: 2048, // Override default 1000
+});
+```
+
+## Environment Variables
+
+Common practice is to store configuration in environment variables:
+
+```bash
+# .env
+LEXA_API_KEY=your_api_key_here
+LEXA_BASE_URL=https://www.lexa.chat/api
+LEXA_TEMPERATURE=0.7
+```
+
+```typescript
+import { createLexaProvider } from '@robilabs/lexa';
+
+const provider = createLexaProvider(
+  {
+    apiKey: process.env.LEXA_API_KEY,
+    provider: 'lexa',
+    baseURL: process.env.LEXA_BASE_URL,
+  },
+  {
+    temperature: parseFloat(process.env.LEXA_TEMPERATURE || '0.7'),
+  }
+);
+```
+
+## Configuration Validation
+
+<Warning>
+The SDK does not perform extensive validation on configuration values. Ensure you provide valid values to avoid runtime errors.
+</Warning>
+
+Common mistakes to avoid:
+- Missing or empty `apiKey`
+- Invalid `baseURL` format (should include protocol)
+- Temperature outside valid range (0.0 - 2.0)
+- `maxOutputTokens` exceeding model limits
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="AI SDK Integration" icon="puzzle-piece" href="/advanced/ai-sdk-integration">
+    Learn how to use LexaProvider with AI SDK v2
+  </Card>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/advanced/error-handling">
+    Handle errors and implement retry logic
+  </Card>
+</CardGroup>

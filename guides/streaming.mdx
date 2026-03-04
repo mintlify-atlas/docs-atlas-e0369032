@@ -1,0 +1,347 @@
+---
+title: Streaming Responses
+description: Learn how to stream chat completions in real-time with the Lexa JS SDK for better user experience and responsiveness
+---
+
+## Overview
+
+Streaming allows you to receive the model's response incrementally as it's being generated, rather than waiting for the entire completion. This creates a more responsive user experience, especially for longer responses.
+
+## Basic Streaming
+
+To enable streaming, set `stream: true` in your chat options:
+
+```javascript
+import Lexa from '@robilabs/lexa';
+
+const lexa = new Lexa('your-api-key');
+
+const completion = await lexa.chat({
+  messages: [
+    { role: 'user', content: 'Write a short poem about coding.' }
+  ],
+  model: 'lexa-rho',
+  temperature: 0.8,
+  stream: true
+});
+
+// Access the stream
+for await (const chunk of completion.stream) {
+  console.log(chunk);
+}
+```
+
+## Handling Stream Chunks
+
+When streaming is enabled, the response contains a `stream` property that you can read from. Here's how to process the chunks:
+
+```javascript
+const completion = await lexa.chat({
+  messages: [
+    { role: 'user', content: 'Write a short story.' }
+  ],
+  model: 'lexa-rho',
+  stream: true
+});
+
+const reader = completion.stream.getReader();
+const decoder = new TextDecoder();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+
+  if (value.type === 'text-delta') {
+    // Stream the text content
+    process.stdout.write(value.delta);
+  } else if (value.type === 'finish') {
+    // Stream completed
+    console.log('\nUsage:', value.usage);
+  }
+}
+```
+
+<Note>
+The stream emits chunks with different types: `text-delta` for incremental text content and `finish` when the stream is complete.
+</Note>
+
+## Real-World Example
+
+Here's a complete example from the SDK's examples directory showing streaming in action:
+
+<CodeGroup>
+
+```javascript Node.js
+import Lexa from '@robilabs/lexa';
+
+async function streamExample() {
+  const lexa = new Lexa(process.env.LEXA_API_KEY);
+
+  console.log('Streaming response:');
+  
+  try {
+    const completion = await lexa.chat({
+      messages: [
+        { role: 'user', content: 'Write a short poem about coding.' }
+      ],
+      model: 'lexa-rho',
+      temperature: 0.8,
+      stream: true
+    });
+
+    const reader = completion.stream.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      if (value.type === 'text-delta') {
+        process.stdout.write(value.delta);
+      } else if (value.type === 'finish') {
+        console.log('\nUsage:', value.usage);
+      }
+    }
+  } catch (error) {
+    console.error('Error:', error.message);
+  }
+}
+
+streamExample();
+```
+
+```javascript Browser
+import Lexa from '@robilabs/lexa';
+
+async function streamToBrowser() {
+  const lexa = new Lexa('your-api-key');
+  
+  const completion = await lexa.chat({
+    messages: [
+      { role: 'user', content: 'Explain quantum computing' }
+    ],
+    model: 'lexa-rho',
+    stream: true
+  });
+
+  const outputElement = document.getElementById('output');
+  const reader = completion.stream.getReader();
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    if (value.type === 'text-delta') {
+      outputElement.textContent += value.delta;
+    }
+  }
+}
+```
+
+```javascript React
+import { useState } from 'react';
+import Lexa from '@robilabs/lexa';
+
+function StreamingChat() {
+  const [output, setOutput] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
+
+  const handleStream = async () => {
+    setIsStreaming(true);
+    setOutput('');
+
+    const lexa = new Lexa(process.env.REACT_APP_LEXA_API_KEY);
+
+    const completion = await lexa.chat({
+      messages: [
+        { role: 'user', content: 'Tell me a story' }
+      ],
+      model: 'lexa-rho',
+      stream: true
+    });
+
+    const reader = completion.stream.getReader();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      if (value.type === 'text-delta') {
+        setOutput(prev => prev + value.delta);
+      }
+    }
+
+    setIsStreaming(false);
+  };
+
+  return (
+    <div>
+      <button onClick={handleStream} disabled={isStreaming}>
+        {isStreaming ? 'Streaming...' : 'Start Stream'}
+      </button>
+      <pre>{output}</pre>
+    </div>
+  );
+}
+```
+
+</CodeGroup>
+
+## Stream Chunk Types
+
+The stream emits different types of chunks during the response:
+
+<Tabs>
+  <Tab title="text-delta">
+    Contains incremental text content from the model's response.
+    
+    ```javascript
+    {
+      type: 'text-delta',
+      delta: 'The next few words of the response'
+    }
+    ```
+  </Tab>
+  
+  <Tab title="finish">
+    Signals the end of the stream and includes usage statistics.
+    
+    ```javascript
+    {
+      type: 'finish',
+      usage: {
+        prompt_tokens: 25,
+        completion_tokens: 150,
+        total_tokens: 175
+      },
+      warnings: []
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Error Handling
+
+Always wrap streaming calls in try-catch blocks to handle potential errors:
+
+```javascript
+try {
+  const completion = await lexa.chat({
+    messages: [{ role: 'user', content: 'Hello!' }],
+    model: 'lexa-rho',
+    stream: true
+  });
+
+  const reader = completion.stream.getReader();
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    if (value.type === 'text-delta') {
+      process.stdout.write(value.delta);
+    }
+  }
+} catch (error) {
+  console.error('Streaming error:', error.message);
+}
+```
+
+<Warning>
+Network interruptions can cause streams to fail mid-generation. Implement proper error handling and consider retry logic for production applications.
+</Warning>
+
+## Aborting Streams
+
+You can cancel an ongoing stream using an AbortController:
+
+```javascript
+const controller = new AbortController();
+
+const completion = await lexa.chat({
+  messages: [{ role: 'user', content: 'Write a long essay' }],
+  model: 'lexa-rho',
+  stream: true
+});
+
+// Cancel after 5 seconds
+setTimeout(() => controller.abort(), 5000);
+
+try {
+  const reader = completion.stream.getReader();
+  
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    if (value.type === 'text-delta') {
+      console.log(value.delta);
+    }
+  }
+} catch (error) {
+  if (error.name === 'AbortError') {
+    console.log('Stream aborted');
+  }
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Buffer management">
+    For long streams, consider buffering chunks before updating the UI to reduce render cycles:
+    
+    ```javascript
+    let buffer = '';
+    const flushInterval = 50; // ms
+    
+    const flushBuffer = () => {
+      if (buffer) {
+        updateUI(buffer);
+        buffer = '';
+      }
+    };
+    
+    const intervalId = setInterval(flushBuffer, flushInterval);
+    
+    // Process stream...
+    
+    clearInterval(intervalId);
+    flushBuffer(); // Final flush
+    ```
+  </Accordion>
+  
+  <Accordion title="User feedback">
+    Show clear indicators when streaming is active:
+    - Display a loading indicator
+    - Show "thinking" or "typing" animations
+    - Indicate when the stream is complete
+  </Accordion>
+  
+  <Accordion title="Model selection">
+    - Use `lexa-rho` for complex reasoning tasks (16,384 token context)
+    - Use `lexa-x1` for faster responses (4,096 token context)
+    - Use `lexa-mml` for multimodal content (8,192 token context)
+  </Accordion>
+</AccordionGroup>
+
+## Performance Considerations
+
+Streaming is ideal for:
+- Long-form content generation (essays, articles, stories)
+- Real-time chat interfaces
+- Progressive content reveal
+- Improved perceived latency
+
+For short responses (< 50 tokens), non-streaming may be more efficient.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Chat Completions" icon="message" href="/guides/chat-completions">
+    Learn about basic chat completions
+  </Card>
+  <Card title="Models" icon="microchip" href="/guides/models">
+    Explore available models and their capabilities
+  </Card>
+</CardGroup>

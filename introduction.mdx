@@ -1,0 +1,217 @@
+---
+title: Welcome to Lexa JS SDK
+description: Build powerful AI applications with the Lexa JavaScript SDK
+mode: custom
+---
+
+<div className="relative isolate overflow-hidden bg-gradient-to-b from-indigo-100/20 dark:from-indigo-950/20 py-16 sm:py-20">
+  <div className="mx-auto max-w-7xl px-6 lg:px-8">
+    <div className="mx-auto max-w-2xl text-center">
+      <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl">
+        Build with Lexa AI
+      </h1>
+      <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
+        JavaScript SDK for Lexa AI with OpenAI-compatible API and AI SDK v2 provider support. Start building intelligent applications in minutes.
+      </p>
+      <div className="mt-10 flex items-center justify-center gap-x-6 flex-wrap">
+        <a
+          href="/quickstart"
+          className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors no-underline"
+        >
+          Get Started
+        </a>
+        <a
+          href="/api/lexa-class"
+          className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white/10 dark:bg-white/5 px-5 py-2.5 text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 transition-colors no-underline"
+        >
+          API Reference
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
+    Quick Start
+  </h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Get up and running with Lexa in three simple steps
+  </p>
+  
+  <Steps>
+    <Step title="Install the package">
+      Install the Lexa SDK using your preferred package manager:
+      
+      <CodeGroup>
+      ```bash npm
+      npm install @robilabs/lexa
+      ```
+      ```bash yarn
+      yarn add @robilabs/lexa
+      ```
+      ```bash pnpm
+      pnpm add @robilabs/lexa
+      ```
+      </CodeGroup>
+    </Step>
+    
+    <Step title="Get your API key">
+      Visit [Lexa Chat](https://www.lexa.chat) to create an account and generate your API key from the account settings.
+    </Step>
+    
+    <Step title="Make your first request">
+      Initialize the SDK and start making requests:
+      
+      ```javascript
+      import Lexa from '@robilabs/lexa';
+      
+      const lexa = new Lexa('your-api-key');
+      
+      const completion = await lexa.chat({
+        messages: [
+          { role: 'user', content: 'Hello! How are you?' }
+        ],
+        model: 'lexa-mml',
+        temperature: 0.7
+      });
+      
+      console.log(completion.choices[0].message.content);
+      ```
+    </Step>
+  </Steps>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
+    Key Features
+  </h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Everything you need to build powerful AI applications
+  </p>
+  
+  <CardGroup cols={2}>
+    <Card title="OpenAI Compatible" icon="code" href="/guides/migration">
+      Familiar interface with OpenAI-style API makes migration seamless
+    </Card>
+    <Card title="AI SDK Integration" icon="plug" href="/advanced/ai-sdk-integration">
+      Full AI SDK v2 provider support for advanced use cases
+    </Card>
+    <Card title="Real-time Streaming" icon="wave-pulse" href="/guides/streaming">
+      Stream responses in real-time for interactive experiences
+    </Card>
+    <Card title="Multiple Models" icon="brain" href="/guides/models">
+      Access to lexa-mml, lexa-x1, lexa-rho, and more
+    </Card>
+    <Card title="TypeScript Support" icon="code-simple" href="/api/types">
+      Full type definitions for a great developer experience
+    </Card>
+    <Card title="Multimodal" icon="images" href="/guides/chat-completions">
+      Support for text and vision capabilities
+    </Card>
+  </CardGroup>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
+    Explore by Topic
+  </h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Find the guides and references you need
+  </p>
+  
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <a href="/guides/chat-completions" className="group block rounded-2xl border border-gray-200 dark:border-[#27272a] hover:border-indigo-600 dark:hover:border-indigo-600 overflow-hidden no-underline transition-colors bg-white dark:bg-[#1a1d27]">
+      <div className="p-6">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+          Chat Completions
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          Learn how to create chat completions with system messages, conversations, and configuration options.
+        </p>
+        <div className="flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300">
+          Read guide
+          <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </a>
+    
+    <a href="/guides/streaming" className="group block rounded-2xl border border-gray-200 dark:border-[#27272a] hover:border-indigo-600 dark:hover:border-indigo-600 overflow-hidden no-underline transition-colors bg-white dark:bg-[#1a1d27]">
+      <div className="p-6">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+          Streaming Responses
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          Stream AI responses in real-time for interactive user experiences and better performance.
+        </p>
+        <div className="flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300">
+          Read guide
+          <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </a>
+    
+    <a href="/api/lexa-class" className="group block rounded-2xl border border-gray-200 dark:border-[#27272a] hover:border-indigo-600 dark:hover:border-indigo-600 overflow-hidden no-underline transition-colors bg-white dark:bg-[#1a1d27]">
+      <div className="p-6">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+          API Reference
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          Complete reference for all classes, methods, and type definitions in the SDK.
+        </p>
+        <div className="flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300">
+          View API docs
+          <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </a>
+    
+    <a href="/advanced/ai-sdk-integration" className="group block rounded-2xl border border-gray-200 dark:border-[#27272a] hover:border-indigo-600 dark:hover:border-indigo-600 overflow-hidden no-underline transition-colors bg-white dark:bg-[#1a1d27]">
+      <div className="p-6">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+          AI SDK Integration
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          Use Lexa as an AI SDK v2 provider for advanced integration patterns and framework support.
+        </p>
+        <div className="flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300">
+          Learn more
+          <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <div className="rounded-2xl border border-gray-200 dark:border-[#27272a] bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950/20 dark:to-[#1a1d27] p-8 sm:p-12">
+    <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
+      Ready to get started?
+    </h2>
+    <p className="text-base text-gray-600 dark:text-gray-400 mb-6 max-w-2xl">
+      Follow our quickstart guide to make your first API call in minutes, or explore the full API reference to see everything the SDK can do.
+    </p>
+    <div className="flex gap-4 flex-wrap">
+      <a
+        href="/quickstart"
+        className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors no-underline"
+      >
+        Start Building
+      </a>
+      <a
+        href="https://github.com/hovhannisians/lexa-js-sdk"
+        className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1d27] px-5 py-2.5 text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-[#242838] transition-colors no-underline"
+      >
+        View on GitHub
+      </a>
+    </div>
+  </div>
+</div>

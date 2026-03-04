@@ -1,80 +1,396 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Build your first application with the Lexa JS SDK in minutes
 ---
 
-## Get started in three steps
+This guide will walk you through creating your first application with the Lexa JS SDK, from installation to making your first API call.
 
-Get your documentation site running locally and make your first customization.
+## Installation
 
-### Step 1: Set up your local environment
+First, install the Lexa SDK in your project:
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+<CodeGroup>
 
-### Step 2: Deploy your changes
+```bash npm
+npm install @robilabs/lexa
+```
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+```bash yarn
+yarn add @robilabs/lexa
+```
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+```bash pnpm
+pnpm add @robilabs/lexa
+```
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+</CodeGroup>
 
-### Step 3: Go live
+## Setup Your API Key
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+Set up your Lexa API key as an environment variable:
 
-## Next steps
-
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+```bash .env
+LEXA_API_KEY=your_api_key_here
+```
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+Don't have an API key yet? Get one at [lexa.chat](https://www.lexa.chat) by signing up and navigating to your account settings.
 </Note>
+
+## Your First Chat Completion
+
+Create a new file and add the following code to make your first chat completion request:
+
+```javascript index.js
+import Lexa from '@robilabs/lexa';
+
+const lexa = new Lexa(process.env.LEXA_API_KEY);
+
+const completion = await lexa.chat({
+  messages: [
+    { role: 'user', content: 'Hello! How are you?' }
+  ],
+  model: 'lexa-mml',
+  temperature: 0.7,
+  max_tokens: 100
+});
+
+console.log(completion.choices[0].message.content);
+```
+
+Run your code:
+
+```bash
+node index.js
+```
+
+You should see a friendly response from Lexa!
+
+## Available Models
+
+Lexa offers several models optimized for different use cases:
+
+<CardGroup cols={3}>
+  <Card title="lexa-mml" icon="eye">
+    **Multimodal Model**
+    
+    Vision and text capabilities with 8K context window
+  </Card>
+  
+  <Card title="lexa-x1" icon="bolt">
+    **Fast Model**
+    
+    Lightweight and quick with 4K context window
+  </Card>
+  
+  <Card title="lexa-rho" icon="brain">
+    **Reasoning Model**
+    
+    Enhanced reasoning with 16K context window
+  </Card>
+</CardGroup>
+
+List all available models programmatically:
+
+```javascript
+const models = await lexa.models();
+console.log(models.data);
+// Output: [
+//   { id: 'lexa-mml', object: 'model', owned_by: 'lexa' },
+//   { id: 'lexa-x1', object: 'model', owned_by: 'lexa' },
+//   { id: 'lexa-rho', object: 'model', owned_by: 'lexa' },
+//   { id: 'linkedin-post-writer', object: 'model', owned_by: 'lexa' }
+// ]
+```
+
+## Common Use Cases
+
+### Basic Conversation
+
+Create a simple chat interaction:
+
+```javascript
+const completion = await lexa.chat({
+  messages: [
+    { role: 'user', content: 'Can you tell me a joke?' }
+  ],
+  model: 'lexa-mml',
+  temperature: 0.7,
+  max_tokens: 100
+});
+
+console.log(completion.choices[0].message.content);
+```
+
+### System Instructions
+
+Guide the model's behavior with system messages:
+
+```javascript
+const completion = await lexa.chat({
+  messages: [
+    { 
+      role: 'system', 
+      content: 'You are a helpful assistant that speaks like a pirate.' 
+    },
+    { 
+      role: 'user', 
+      content: 'What is the weather like today?' 
+    }
+  ],
+  model: 'lexa-x1',
+  temperature: 0.9
+});
+
+console.log(completion.choices[0].message.content);
+```
+
+### Multi-turn Conversations
+
+Maintain context across multiple exchanges:
+
+```javascript
+const messages = [
+  { role: 'system', content: 'You are a helpful coding assistant.' },
+  { role: 'user', content: 'What is a closure in JavaScript?' }
+];
+
+const response1 = await lexa.chat({
+  messages,
+  model: 'lexa-rho',
+  temperature: 0.7
+});
+
+// Add the assistant's response to the conversation
+messages.push({
+  role: 'assistant',
+  content: response1.choices[0].message.content
+});
+
+// Continue the conversation
+messages.push({
+  role: 'user',
+  content: 'Can you show me an example?'
+});
+
+const response2 = await lexa.chat({
+  messages,
+  model: 'lexa-rho'
+});
+
+console.log(response2.choices[0].message.content);
+```
+
+### Streaming Responses
+
+Get real-time streaming output for long responses:
+
+```javascript
+const completion = await lexa.chat({
+  messages: [
+    { role: 'user', content: 'Write a short poem about coding.' }
+  ],
+  model: 'lexa-rho',
+  temperature: 0.8,
+  stream: true
+});
+
+// Handle streaming response
+const reader = completion.stream.getReader();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+
+  if (value.type === 'text-delta') {
+    process.stdout.write(value.delta);
+  } else if (value.type === 'finish') {
+    console.log('\n\nUsage:', value.usage);
+  }
+}
+```
+
+<Note>
+Streaming is perfect for chatbots and interactive applications where you want to display responses as they're generated.
+</Note>
+
+## Configuration Options
+
+Customize your Lexa client with additional configuration:
+
+```javascript
+const lexa = new Lexa(process.env.LEXA_API_KEY, {
+  baseURL: 'https://www.lexa.chat/api', // Custom base URL (default shown)
+});
+```
+
+### Chat Completion Options
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `messages` | `Array` | Array of message objects with `role` and `content` |
+| `model` | `string` | Model ID (default: `'lexa-mml'`) |
+| `temperature` | `number` | Controls randomness (0-2, default: 1.0) |
+| `max_tokens` | `number` | Maximum tokens to generate |
+| `stream` | `boolean` | Enable streaming response (default: `false`) |
+
+## Understanding Responses
+
+A typical response structure:
+
+```javascript
+{
+  choices: [{
+    message: {
+      role: 'assistant',
+      content: 'The response text from the model'
+    },
+    finish_reason: 'stop' // or 'length', 'content_filter'
+  }],
+  usage: {
+    prompt_tokens: 15,
+    completion_tokens: 42,
+    total_tokens: 57
+  }
+}
+```
+
+## Error Handling
+
+Implement proper error handling for production applications:
+
+```javascript
+try {
+  const completion = await lexa.chat({
+    messages: [
+      { role: 'user', content: 'Hello!' }
+    ],
+    model: 'lexa-mml'
+  });
+  
+  console.log(completion.choices[0].message.content);
+} catch (error) {
+  if (error.status === 401) {
+    console.error('Invalid API key');
+  } else if (error.status === 429) {
+    console.error('Rate limit exceeded');
+  } else {
+    console.error('Error:', error.message);
+  }
+}
+```
+
+## Complete Example
+
+Here's a complete example that puts it all together:
+
+```javascript app.js
+import Lexa from '@robilabs/lexa';
+
+async function main() {
+  // Initialize client
+  const lexa = new Lexa(process.env.LEXA_API_KEY);
+
+  // Example 1: Simple chat
+  console.log('Simple Chat:');
+  const simple = await lexa.chat({
+    messages: [{ role: 'user', content: 'Hello! Can you tell me a joke?' }],
+    model: 'lexa-mml',
+    temperature: 0.7,
+    max_tokens: 100
+  });
+  console.log(simple.choices[0].message.content);
+  console.log('Usage:', simple.usage);
+
+  // Example 2: System message
+  console.log('\nWith System Message:');
+  const withSystem = await lexa.chat({
+    messages: [
+      { role: 'system', content: 'You are a helpful assistant that speaks like a pirate.' },
+      { role: 'user', content: 'What is the weather like today?' }
+    ],
+    model: 'lexa-x1',
+    temperature: 0.9
+  });
+  console.log(withSystem.choices[0].message.content);
+
+  // Example 3: Streaming
+  console.log('\nStreaming Response:');
+  const streaming = await lexa.chat({
+    messages: [{ role: 'user', content: 'Write a short poem about coding.' }],
+    model: 'lexa-rho',
+    temperature: 0.8,
+    stream: true
+  });
+
+  const reader = streaming.stream.getReader();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value.type === 'text-delta') {
+      process.stdout.write(value.delta);
+    } else if (value.type === 'finish') {
+      console.log('\n\nUsage:', value.usage);
+    }
+  }
+
+  // Example 4: List models
+  console.log('\nAvailable Models:');
+  const models = await lexa.models();
+  models.data.forEach(model => {
+    console.log(`- ${model.id} (${model.owned_by})`);
+  });
+}
+
+main().catch(console.error);
+```
+
+## Migration from OpenAI
+
+If you're migrating from OpenAI, the transition is straightforward:
+
+<CodeGroup>
+
+```javascript OpenAI
+import OpenAI from 'openai';
+
+const openai = new OpenAI({ apiKey: 'your-key' });
+
+const completion = await openai.chat.completions.create({
+  messages: [{ role: 'user', content: 'Hello!' }],
+  model: 'gpt-3.5-turbo'
+});
+```
+
+```javascript Lexa
+import Lexa from '@robilabs/lexa';
+
+const lexa = new Lexa('your-key');
+
+const completion = await lexa.chat({
+  messages: [{ role: 'user', content: 'Hello!' }],
+  model: 'lexa-mml'
+});
+```
+
+</CodeGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Chat Completions" icon="message" href="/guides/chat-completions">
+    Learn about chat completion features and options
+  </Card>
+  
+  <Card title="Streaming" icon="water" href="/guides/streaming">
+    Stream responses in real-time
+  </Card>
+  
+  <Card title="AI SDK Integration" icon="plug" href="/advanced/ai-sdk-integration">
+    Use Lexa as an AI SDK v2 provider
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/api/lexa-class">
+    Explore the complete API documentation
+  </Card>
+</CardGroup>

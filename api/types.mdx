@@ -1,0 +1,440 @@
+---
+title: Types
+description: TypeScript type definitions for the Lexa JS SDK
+---
+
+Complete TypeScript type definitions for the Lexa JS SDK.
+
+## Configuration Types
+
+### LexaProviderConfig
+
+Configuration for the Lexa provider.
+
+```typescript
+interface LexaProviderConfig {
+  baseURL?: string;
+  apiKey: string;
+  provider: string;
+  headers?: Record<string, string>;
+}
+```
+
+<ResponseField name="baseURL" type="string">
+  The base URL for the Lexa API (default: 'https://www.lexa.chat/api')
+</ResponseField>
+
+<ResponseField name="apiKey" type="string" required>
+  API key for authentication
+</ResponseField>
+
+<ResponseField name="provider" type="string" required>
+  Provider name for identification
+</ResponseField>
+
+<ResponseField name="headers" type="Record<string, string>">
+  Default headers to include in requests
+</ResponseField>
+
+### LexaProviderSettings
+
+Optional settings for the Lexa provider.
+
+```typescript
+interface LexaProviderSettings {
+  temperature?: number;
+  maxOutputTokens?: number;
+  stopSequences?: string[];
+  enableStreaming?: boolean;
+}
+```
+
+<ResponseField name="temperature" type="number">
+  Default temperature for text generation (0-2)
+</ResponseField>
+
+<ResponseField name="maxOutputTokens" type="number">
+  Default maximum output tokens
+</ResponseField>
+
+<ResponseField name="stopSequences" type="string[]">
+  Default stop sequences
+</ResponseField>
+
+<ResponseField name="enableStreaming" type="boolean">
+  Whether to enable streaming by default
+</ResponseField>
+
+## Message Types
+
+### LexaMessage
+
+Represents a message in the conversation.
+
+```typescript
+interface LexaMessage {
+  role: 'system' | 'user' | 'assistant' | 'tool';
+  content: string | LexaMessageContent[];
+}
+```
+
+<ResponseField name="role" type="'system' | 'user' | 'assistant' | 'tool'" required>
+  The role of the message sender
+</ResponseField>
+
+<ResponseField name="content" type="string | LexaMessageContent[]" required>
+  The message content - either a string or array of content parts
+</ResponseField>
+
+### LexaMessageContent
+
+Represents a content part within a message.
+
+```typescript
+interface LexaMessageContent {
+  type: 'text' | 'image_url' | 'tool_call' | 'tool_result';
+  text?: string;
+  image_url?: {
+    url: string;
+  };
+  tool_call?: {
+    id: string;
+    function: {
+      name: string;
+      arguments: string;
+    };
+  };
+  tool_result?: {
+    tool_call_id: string;
+    content: string;
+  };
+}
+```
+
+<ResponseField name="type" type="'text' | 'image_url' | 'tool_call' | 'tool_result'" required>
+  The type of content part
+</ResponseField>
+
+<ResponseField name="text" type="string">
+  Text content (when type is 'text')
+</ResponseField>
+
+<ResponseField name="image_url" type="object">
+  Image URL (when type is 'image_url')
+  
+  <ResponseField name="url" type="string" required>
+    The image URL or data URI
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="tool_call" type="object">
+  Tool call information (when type is 'tool_call')
+  
+  <ResponseField name="id" type="string" required>
+    Unique identifier for the tool call
+  </ResponseField>
+  
+  <ResponseField name="function" type="object" required>
+    Function details
+    
+    <ResponseField name="name" type="string" required>
+      Function name
+    </ResponseField>
+    
+    <ResponseField name="arguments" type="string" required>
+      JSON string of function arguments
+    </ResponseField>
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="tool_result" type="object">
+  Tool result (when type is 'tool_result')
+  
+  <ResponseField name="tool_call_id" type="string" required>
+    ID of the tool call this result corresponds to
+  </ResponseField>
+  
+  <ResponseField name="content" type="string" required>
+    The result content
+  </ResponseField>
+</ResponseField>
+
+## Tool Types
+
+### LexaTool
+
+Defines a tool/function that the model can call.
+
+```typescript
+interface LexaTool {
+  type: 'function';
+  function: {
+    name: string;
+    description?: string;
+    parameters: Record<string, unknown>;
+  };
+}
+```
+
+<ResponseField name="type" type="'function'" required>
+  Always 'function'
+</ResponseField>
+
+<ResponseField name="function" type="object" required>
+  Function definition
+  
+  <ResponseField name="name" type="string" required>
+    Function name
+  </ResponseField>
+  
+  <ResponseField name="description" type="string">
+    Function description
+  </ResponseField>
+  
+  <ResponseField name="parameters" type="Record<string, unknown>" required>
+    JSON Schema describing the function parameters
+  </ResponseField>
+</ResponseField>
+
+## Request/Response Types
+
+### LexaRequest
+
+Represents a complete request to the Lexa API.
+
+```typescript
+interface LexaRequest {
+  model: string;
+  messages: LexaMessage[];
+  temperature?: number;
+  max_tokens?: number;
+  stop?: string[];
+  tools?: LexaTool[];
+  tool_choice?: 'auto' | 'none' | { type: 'function'; function: { name: string } };
+  stream?: boolean;
+}
+```
+
+<ResponseField name="model" type="string" required>
+  Model ID to use
+</ResponseField>
+
+<ResponseField name="messages" type="LexaMessage[]" required>
+  Array of conversation messages
+</ResponseField>
+
+<ResponseField name="temperature" type="number">
+  Sampling temperature (0-2)
+</ResponseField>
+
+<ResponseField name="max_tokens" type="number">
+  Maximum tokens to generate
+</ResponseField>
+
+<ResponseField name="stop" type="string[]">
+  Stop sequences
+</ResponseField>
+
+<ResponseField name="tools" type="LexaTool[]">
+  Available tools for function calling
+</ResponseField>
+
+<ResponseField name="tool_choice" type="'auto' | 'none' | object">
+  How to select tools: 'auto' (default), 'none', or specify a function
+</ResponseField>
+
+<ResponseField name="stream" type="boolean">
+  Whether to stream the response
+</ResponseField>
+
+### LexaResponse
+
+Represents a complete response from the Lexa API.
+
+```typescript
+interface LexaResponse {
+  id: string;
+  object: string;
+  created: number;
+  model: string;
+  choices: Array<{
+    index: number;
+    message: LexaMessage;
+    finish_reason: string;
+  }>;
+  usage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+}
+```
+
+<ResponseField name="id" type="string" required>
+  Unique response identifier
+</ResponseField>
+
+<ResponseField name="object" type="string" required>
+  Object type (e.g., 'chat.completion')
+</ResponseField>
+
+<ResponseField name="created" type="number" required>
+  Unix timestamp of creation
+</ResponseField>
+
+<ResponseField name="model" type="string" required>
+  Model used for generation
+</ResponseField>
+
+<ResponseField name="choices" type="Array" required>
+  Array of completion choices
+  
+  <ResponseField name="index" type="number" required>
+    Choice index
+  </ResponseField>
+  
+  <ResponseField name="message" type="LexaMessage" required>
+    The generated message
+  </ResponseField>
+  
+  <ResponseField name="finish_reason" type="string" required>
+    Why generation stopped: 'stop', 'length', 'tool_calls'
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="usage" type="object">
+  Token usage information
+  
+  <ResponseField name="prompt_tokens" type="number" required>
+    Tokens in the prompt
+  </ResponseField>
+  
+  <ResponseField name="completion_tokens" type="number" required>
+    Tokens in the completion
+  </ResponseField>
+  
+  <ResponseField name="total_tokens" type="number" required>
+    Total tokens used
+  </ResponseField>
+</ResponseField>
+
+### LexaStreamChunk
+
+Represents a streaming response chunk.
+
+```typescript
+interface LexaStreamChunk {
+  id: string;
+  object: string;
+  created: number;
+  model: string;
+  choices: Array<{
+    index: number;
+    delta: Partial<LexaMessage>;
+    finish_reason?: string;
+  }>;
+  usage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+}
+```
+
+<ResponseField name="id" type="string" required>
+  Unique response identifier
+</ResponseField>
+
+<ResponseField name="object" type="string" required>
+  Object type (e.g., 'chat.completion.chunk')
+</ResponseField>
+
+<ResponseField name="created" type="number" required>
+  Unix timestamp of creation
+</ResponseField>
+
+<ResponseField name="model" type="string" required>
+  Model used for generation
+</ResponseField>
+
+<ResponseField name="choices" type="Array" required>
+  Array of streaming choices
+  
+  <ResponseField name="index" type="number" required>
+    Choice index
+  </ResponseField>
+  
+  <ResponseField name="delta" type="Partial<LexaMessage>" required>
+    Incremental message content
+  </ResponseField>
+  
+  <ResponseField name="finish_reason" type="string">
+    Present in the final chunk: 'stop', 'length', 'tool_calls'
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="usage" type="object">
+  Token usage (typically in the final chunk)
+  
+  <ResponseField name="prompt_tokens" type="number" required>
+    Tokens in the prompt
+  </ResponseField>
+  
+  <ResponseField name="completion_tokens" type="number" required>
+    Tokens in the completion
+  </ResponseField>
+  
+  <ResponseField name="total_tokens" type="number" required>
+    Total tokens used
+  </ResponseField>
+</ResponseField>
+
+## Usage Examples
+
+### Basic Type Usage
+
+```typescript
+import type {
+  LexaProviderConfig,
+  LexaProviderSettings,
+  LexaMessage,
+  LexaRequest,
+  LexaResponse,
+} from 'lexa-js-sdk';
+
+const config: LexaProviderConfig = {
+  apiKey: 'your-api-key',
+  provider: 'lexa',
+  baseURL: 'https://www.lexa.chat/api',
+};
+
+const settings: LexaProviderSettings = {
+  temperature: 0.7,
+  maxOutputTokens: 2000,
+};
+
+const messages: LexaMessage[] = [
+  {
+    role: 'system',
+    content: 'You are a helpful assistant.',
+  },
+  {
+    role: 'user',
+    content: 'Hello!',
+  },
+];
+```
+
+### With AI SDK Types
+
+The SDK also re-exports AI SDK types for convenience:
+
+```typescript
+import type {
+  LanguageModelV2,
+  LanguageModelV2CallOptions,
+  LanguageModelV2Content,
+  LanguageModelV2Prompt,
+  LanguageModelV2StreamPart,
+} from 'lexa-js-sdk';
+```

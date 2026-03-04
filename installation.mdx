@@ -1,0 +1,154 @@
+---
+title: Installation
+description: Install and set up the Lexa JS SDK in your project
+---
+
+Get started with the Lexa JS SDK by installing it in your project and configuring your API key.
+
+## Prerequisites
+
+Before installing the Lexa JS SDK, ensure you have:
+
+- **Node.js** version 16.x or higher
+- **npm**, **yarn**, or **pnpm** package manager
+- A **Lexa API key** (see [Getting Your API Key](#getting-your-api-key) below)
+
+## Installation
+
+<CodeGroup>
+
+```bash npm
+npm install @robilabs/lexa
+```
+
+```bash yarn
+yarn add @robilabs/lexa
+```
+
+```bash pnpm
+pnpm add @robilabs/lexa
+```
+
+</CodeGroup>
+
+<Note>
+The SDK is published as `@robilabs/lexa` on npm. Make sure to use the scoped package name when installing.
+</Note>
+
+## Getting Your API Key
+
+To use the Lexa SDK, you'll need an API key from Lexa Chat:
+
+<Steps>
+  <Step title="Visit Lexa Chat">
+    Go to [lexa.chat](https://www.lexa.chat) and sign up for an account if you haven't already.
+  </Step>
+  
+  <Step title="Access Account Settings">
+    After logging in, navigate to your account settings or dashboard.
+  </Step>
+  
+  <Step title="Generate API Key">
+    Look for the API Keys section and generate a new API key. Copy it securely.
+  </Step>
+  
+  <Step title="Store Securely">
+    Store your API key in a secure location. Never commit it to version control.
+  </Step>
+</Steps>
+
+## Environment Setup
+
+It's recommended to store your API key in an environment variable:
+
+<CodeGroup>
+
+```bash .env
+LEXA_API_KEY=your_api_key_here
+```
+
+```bash Shell
+export LEXA_API_KEY="your_api_key_here"
+```
+
+</CodeGroup>
+
+Then access it in your code:
+
+```javascript
+const lexa = new Lexa(process.env.LEXA_API_KEY);
+```
+
+<Warning>
+Never hardcode your API key directly in your source code. Always use environment variables or a secure secrets management system.
+</Warning>
+
+## Verify Installation
+
+Create a simple test file to verify your installation:
+
+```javascript test.js
+import Lexa from '@robilabs/lexa';
+
+const lexa = new Lexa(process.env.LEXA_API_KEY);
+
+// List available models
+const models = await lexa.models();
+console.log('Available models:', models.data);
+```
+
+Run the test:
+
+```bash
+node test.js
+```
+
+You should see a list of available Lexa models:
+
+```json
+[
+  { id: 'lexa-mml', object: 'model', owned_by: 'lexa' },
+  { id: 'lexa-x1', object: 'model', owned_by: 'lexa' },
+  { id: 'lexa-rho', object: 'model', owned_by: 'lexa' },
+  { id: 'linkedin-post-writer', object: 'model', owned_by: 'lexa' }
+]
+```
+
+## TypeScript Support
+
+The Lexa SDK includes full TypeScript definitions out of the box. No additional type packages are required.
+
+```typescript
+import Lexa from '@robilabs/lexa';
+
+const lexa = new Lexa(process.env.LEXA_API_KEY!);
+
+// Full type safety and autocomplete
+const completion = await lexa.chat({
+  messages: [{ role: 'user', content: 'Hello!' }],
+  model: 'lexa-mml',
+  temperature: 0.7,
+  max_tokens: 100
+});
+```
+
+## Dependencies
+
+The SDK has minimal dependencies:
+
+- `@ai-sdk/provider` - Vercel AI SDK provider interface
+- `@ai-sdk/provider-utils` - Utility functions for AI SDK providers
+
+These are automatically installed when you install the Lexa SDK.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Build your first application with the Lexa SDK
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/api/lexa-class">
+    Explore the complete API documentation
+  </Card>
+</CardGroup>

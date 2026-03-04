@@ -1,0 +1,540 @@
+---
+title: Migration from OpenAI
+description: Step-by-step guide to migrating from OpenAI's SDK to the Lexa JS SDK with before/after examples and compatibility notes
+---
+
+## Overview
+
+The Lexa JS SDK is designed to be compatible with OpenAI's API style, making migration straightforward. Most code changes involve updating imports, initialization, and model names.
+
+<Note>
+The Lexa SDK follows OpenAI's API patterns, so your existing code structure will largely remain the same.
+</Note>
+
+## Quick Migration
+
+Here's the simplest migration path:
+
+<CodeGroup>
+
+```javascript Before (OpenAI)
+import OpenAI from 'openai';
+
+const openai = new OpenAI({ 
+  apiKey: 'your-openai-key' 
+});
+
+const completion = await openai.chat.completions.create({
+  messages: [{ role: 'user', content: 'Hello!' }],
+  model: 'gpt-3.5-turbo'
+});
+
+console.log(completion.choices[0].message.content);
+```
+
+```javascript After (Lexa)
+import Lexa from '@robilabs/lexa';
+
+const lexa = new Lexa('your-lexa-key');
+
+const completion = await lexa.chat({
+  messages: [{ role: 'user', content: 'Hello!' }],
+  model: 'lexa-mml'
+});
+
+console.log(completion.choices[0].message.content);
+```
+
+</CodeGroup>
+
+## Installation
+
+First, update your package dependencies:
+
+<Tabs>
+  <Tab title="npm">
+    ```bash
+    # Remove OpenAI SDK
+    npm uninstall openai
+    
+    # Install Lexa SDK
+    npm install @robilabs/lexa@latest
+    ```
+  </Tab>
+  
+  <Tab title="yarn">
+    ```bash
+    # Remove OpenAI SDK
+    yarn remove openai
+    
+    # Install Lexa SDK
+    yarn add @robilabs/lexa
+    ```
+  </Tab>
+  
+  <Tab title="pnpm">
+    ```bash
+    # Remove OpenAI SDK
+    pnpm remove openai
+    
+    # Install Lexa SDK
+    pnpm add @robilabs/lexa
+    ```
+  </Tab>
+</Tabs>
+
+## Step-by-Step Migration
+
+### 1. Update Imports
+
+<CodeGroup>
+
+```javascript Before
+import OpenAI from 'openai';
+// or
+const OpenAI = require('openai');
+```
+
+```javascript After
+import Lexa from '@robilabs/lexa';
+// or
+const Lexa = require('@robilabs/lexa');
+```
+
+</CodeGroup>
+
+### 2. Update Initialization
+
+<CodeGroup>
+
+```javascript Before
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: 'https://api.openai.com/v1' // optional
+});
+```
+
+```javascript After
+const lexa = new Lexa(
+  process.env.LEXA_API_KEY,
+  { 
+    baseURL: 'https://www.lexa.chat/api' // optional
+  }
+);
+```
+
+</CodeGroup>
+
+<Note>
+Lexa uses a simpler constructor: API key as first parameter, config object as optional second parameter.
+</Note>
+
+### 3. Update Method Calls
+
+<CodeGroup>
+
+```javascript Before
+const completion = await openai.chat.completions.create({
+  messages: [
+    { role: 'user', content: 'Hello!' }
+  ],
+  model: 'gpt-3.5-turbo',
+  temperature: 0.7,
+  max_tokens: 100
+});
+```
+
+```javascript After
+const completion = await lexa.chat({
+  messages: [
+    { role: 'user', content: 'Hello!' }
+  ],
+  model: 'lexa-mml',
+  temperature: 0.7,
+  max_tokens: 100
+});
+```
+
+</CodeGroup>
+
+**Key Differences:**
+- OpenAI: `openai.chat.completions.create()`
+- Lexa: `lexa.chat()`
+
+### 4. Update Model Names
+
+Map your OpenAI models to Lexa equivalents:
+
+| OpenAI Model | Lexa Model | Notes |
+|--------------|------------|-------|
+| `gpt-3.5-turbo` | `lexa-x1` | Fast, efficient model |
+| `gpt-4` | `lexa-mml` | Balanced, multimodal |
+| `gpt-4-turbo` | `lexa-rho` | Advanced reasoning |
+| `gpt-4-vision` | `lexa-mml` | Vision capabilities |
+
+## Complete Examples
+
+### Basic Chat
+
+<CodeGroup>
+
+```javascript Before (OpenAI)
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+const completion = await openai.chat.completions.create({
+  messages: [
+    { role: 'user', content: 'Tell me a joke' }
+  ],
+  model: 'gpt-3.5-turbo',
+  temperature: 0.7,
+  max_tokens: 100
+});
+
+console.log(completion.choices[0].message.content);
+console.log('Tokens used:', completion.usage.total_tokens);
+```
+
+```javascript After (Lexa)
+import Lexa from '@robilabs/lexa';
+
+const lexa = new Lexa(process.env.LEXA_API_KEY);
+
+const completion = await lexa.chat({
+  messages: [
+    { role: 'user', content: 'Tell me a joke' }
+  ],
+  model: 'lexa-mml',
+  temperature: 0.7,
+  max_tokens: 100
+});
+
+console.log(completion.choices[0].message.content);
+console.log('Tokens used:', completion.usage.total_tokens);
+```
+
+</CodeGroup>
+
+### System Messages
+
+<CodeGroup>
+
+```javascript Before (OpenAI)
+const completion = await openai.chat.completions.create({
+  messages: [
+    { 
+      role: 'system', 
+      content: 'You are a helpful assistant that speaks like a pirate.' 
+    },
+    { 
+      role: 'user', 
+      content: 'What is the weather?' 
+    }
+  ],
+  model: 'gpt-3.5-turbo',
+  temperature: 0.9
+});
+```
+
+```javascript After (Lexa)
+const completion = await lexa.chat({
+  messages: [
+    { 
+      role: 'system', 
+      content: 'You are a helpful assistant that speaks like a pirate.' 
+    },
+    { 
+      role: 'user', 
+      content: 'What is the weather?' 
+    }
+  ],
+  model: 'lexa-x1',
+  temperature: 0.9
+});
+```
+
+</CodeGroup>
+
+### Streaming
+
+<CodeGroup>
+
+```javascript Before (OpenAI)
+const stream = await openai.chat.completions.create({
+  messages: [{ role: 'user', content: 'Write a story' }],
+  model: 'gpt-4',
+  stream: true
+});
+
+for await (const chunk of stream) {
+  const content = chunk.choices[0]?.delta?.content || '';
+  process.stdout.write(content);
+}
+```
+
+```javascript After (Lexa)
+const completion = await lexa.chat({
+  messages: [{ role: 'user', content: 'Write a story' }],
+  model: 'lexa-rho',
+  stream: true
+});
+
+const reader = completion.stream.getReader();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+
+  if (value.type === 'text-delta') {
+    process.stdout.write(value.delta);
+  }
+}
+```
+
+</CodeGroup>
+
+<Warning>
+Streaming implementation differs between OpenAI and Lexa. Lexa uses a more explicit stream reader pattern.
+</Warning>
+
+### Multi-Turn Conversations
+
+<CodeGroup>
+
+```javascript Before (OpenAI)
+const messages = [
+  { role: 'system', content: 'You are a helpful assistant.' },
+  { role: 'user', content: 'What is JavaScript?' }
+];
+
+const response1 = await openai.chat.completions.create({
+  messages,
+  model: 'gpt-3.5-turbo'
+});
+
+messages.push({
+  role: 'assistant',
+  content: response1.choices[0].message.content
+});
+
+messages.push({
+  role: 'user',
+  content: 'Can you show an example?'
+});
+
+const response2 = await openai.chat.completions.create({
+  messages,
+  model: 'gpt-3.5-turbo'
+});
+```
+
+```javascript After (Lexa)
+const messages = [
+  { role: 'system', content: 'You are a helpful assistant.' },
+  { role: 'user', content: 'What is JavaScript?' }
+];
+
+const response1 = await lexa.chat({
+  messages,
+  model: 'lexa-mml'
+});
+
+messages.push({
+  role: 'assistant',
+  content: response1.choices[0].message.content
+});
+
+messages.push({
+  role: 'user',
+  content: 'Can you show an example?'
+});
+
+const response2 = await lexa.chat({
+  messages,
+  model: 'lexa-mml'
+});
+```
+
+</CodeGroup>
+
+## API Response Format
+
+Both SDKs return responses in a similar format:
+
+```javascript
+{
+  choices: [{
+    message: {
+      role: 'assistant',
+      content: 'Response text here'
+    },
+    finish_reason: 'stop'
+  }],
+  usage: {
+    prompt_tokens: 25,
+    completion_tokens: 50,
+    total_tokens: 75
+  }
+}
+```
+
+<Note>
+Response structure is identical, so your existing response handling code should work without changes.
+</Note>
+
+## Environment Variables
+
+Update your environment variable names:
+
+<CodeGroup>
+
+```bash Before (.env)
+OPENAI_API_KEY=sk-...
+```
+
+```bash After (.env)
+LEXA_API_KEY=lexa-...
+```
+
+</CodeGroup>
+
+And in your code:
+
+<CodeGroup>
+
+```javascript Before
+const apiKey = process.env.OPENAI_API_KEY;
+const openai = new OpenAI({ apiKey });
+```
+
+```javascript After
+const apiKey = process.env.LEXA_API_KEY;
+const lexa = new Lexa(apiKey);
+```
+
+</CodeGroup>
+
+## Error Handling
+
+Error handling patterns remain similar:
+
+<CodeGroup>
+
+```javascript Before (OpenAI)
+try {
+  const completion = await openai.chat.completions.create({
+    messages: [{ role: 'user', content: 'Hello' }],
+    model: 'gpt-3.5-turbo'
+  });
+} catch (error) {
+  if (error.response) {
+    console.error('API Error:', error.response.status);
+  } else {
+    console.error('Error:', error.message);
+  }
+}
+```
+
+```javascript After (Lexa)
+try {
+  const completion = await lexa.chat({
+    messages: [{ role: 'user', content: 'Hello' }],
+    model: 'lexa-mml'
+  });
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+
+</CodeGroup>
+
+## Migration Checklist
+
+<AccordionGroup>
+  <Accordion title="Package Updates">
+    - [ ] Remove `openai` package
+    - [ ] Install `@robilabs/lexa` package
+    - [ ] Update package.json dependencies
+    - [ ] Run `npm install` or equivalent
+  </Accordion>
+  
+  <Accordion title="Code Updates">
+    - [ ] Update all import statements
+    - [ ] Replace `OpenAI` with `Lexa` class
+    - [ ] Update initialization code
+    - [ ] Change `openai.chat.completions.create()` to `lexa.chat()`
+    - [ ] Update model names
+    - [ ] Update streaming implementation if used
+  </Accordion>
+  
+  <Accordion title="Configuration">
+    - [ ] Update environment variables
+    - [ ] Update API key references
+    - [ ] Update base URL if customized
+    - [ ] Update any configuration files
+  </Accordion>
+  
+  <Accordion title="Testing">
+    - [ ] Test basic chat completions
+    - [ ] Test streaming if used
+    - [ ] Test error handling
+    - [ ] Verify response processing
+    - [ ] Check token usage and billing
+  </Accordion>
+</AccordionGroup>
+
+## Common Pitfalls
+
+<Warning>
+**Method Name Differences**
+
+OpenAI uses `openai.chat.completions.create()` while Lexa uses `lexa.chat()`. Don't forget to update all instances.
+</Warning>
+
+<Warning>
+**Streaming Implementation**
+
+Streaming patterns differ between SDKs. Lexa uses `completion.stream.getReader()` while OpenAI uses `for await...of`.
+</Warning>
+
+<Warning>
+**Constructor Parameters**
+
+Lexa takes API key as first parameter, OpenAI uses an options object. Update initialization accordingly.
+</Warning>
+
+## Getting Your Lexa API Key
+
+1. Visit [Lexa Chat](https://www.lexa.chat)
+2. Sign up or log in to your account
+3. Navigate to Account settings
+4. Generate a new API key
+5. Update your environment variables
+
+## Additional Resources
+
+<CardGroup cols={2}>
+  <Card title="Chat Completions" icon="message" href="/guides/chat-completions">
+    Learn about Lexa's chat completion API
+  </Card>
+  <Card title="Streaming" icon="water" href="/guides/streaming">
+    Implement streaming responses
+  </Card>
+  <Card title="Models" icon="microchip" href="/guides/models">
+    Explore available Lexa models
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/lexa-class">
+    Complete API documentation
+  </Card>
+</CardGroup>
+
+## Need Help?
+
+If you encounter issues during migration:
+
+- Check the [GitHub Issues](https://github.com/Robi-Labs/lexa-js-sdk/issues)
+- Email support: lexa@robiai.com
+- Join the community: https://community.robiai.com/

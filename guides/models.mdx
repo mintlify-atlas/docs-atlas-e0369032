@@ -1,0 +1,358 @@
+---
+title: Available Models
+description: Explore the Lexa AI models available in the SDK, including specifications, capabilities, and use cases for each model
+---
+
+## Overview
+
+The Lexa JS SDK provides access to multiple AI models, each optimized for different use cases. Choose the right model based on your requirements for speed, context length, and capabilities.
+
+## Model Comparison
+
+<Tabs>
+  <Tab title="lexa-mml">
+    ### Lexa MML (Multimodal)
+    
+    The flagship multimodal model with vision capabilities.
+    
+    **Specifications:**
+    - **Context Window**: 8,192 tokens
+    - **Max Output**: 4,096 tokens
+    - **Capabilities**: Text and vision processing
+    - **Best For**: Multimodal tasks, image understanding, general purpose
+    
+    **Example:**
+    ```javascript
+    const lexa = new Lexa('your-api-key');
+    
+    const completion = await lexa.chat({
+      messages: [
+        { role: 'user', content: 'Explain this concept in simple terms' }
+      ],
+      model: 'lexa-mml',
+      temperature: 0.7
+    });
+    ```
+  </Tab>
+  
+  <Tab title="lexa-x1">
+    ### Lexa X1 (Fast)
+    
+    Fast, lightweight text-based model for quick responses.
+    
+    **Specifications:**
+    - **Context Window**: 4,096 tokens
+    - **Max Output**: 2,048 tokens
+    - **Capabilities**: Text processing
+    - **Best For**: Quick responses, simple tasks, high throughput
+    
+    **Example:**
+    ```javascript
+    const lexa = new Lexa('your-api-key');
+    
+    const completion = await lexa.chat({
+      messages: [
+        { role: 'user', content: 'Translate this to Spanish: Hello' }
+      ],
+      model: 'lexa-x1',
+      temperature: 0.5
+    });
+    ```
+  </Tab>
+  
+  <Tab title="lexa-rho">
+    ### Lexa Rho (Reasoning)
+    
+    Reasoning model with enhanced capabilities for complex tasks.
+    
+    **Specifications:**
+    - **Context Window**: 16,384 tokens
+    - **Max Output**: 8,192 tokens
+    - **Capabilities**: Advanced reasoning, long context
+    - **Best For**: Complex analysis, coding, long-form content
+    
+    **Example:**
+    ```javascript
+    const lexa = new Lexa('your-api-key');
+    
+    const completion = await lexa.chat({
+      messages: [
+        { role: 'user', content: 'Analyze this code and suggest improvements...' }
+      ],
+      model: 'lexa-rho',
+      temperature: 0.7
+    });
+    ```
+  </Tab>
+  
+  <Tab title="linkedin-post-writer">
+    ### LinkedIn Post Writer
+    
+    Specialized model for creating engaging LinkedIn content.
+    
+    **Specifications:**
+    - **Context Window**: 8,192 tokens
+    - **Max Output**: 4,096 tokens
+    - **Capabilities**: Professional content creation
+    - **Best For**: LinkedIn posts, professional writing
+    
+    **Example:**
+    ```javascript
+    const lexa = new Lexa('your-api-key');
+    
+    const completion = await lexa.chat({
+      messages: [
+        { 
+          role: 'system',
+          content: 'Create an engaging LinkedIn post'
+        },
+        { 
+          role: 'user', 
+          content: 'Topic: The importance of AI in modern business' 
+        }
+      ],
+      model: 'linkedin-post-writer',
+      temperature: 0.8
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Model Selection Guide
+
+<CardGroup cols={2}>
+  <Card title="Speed Priority" icon="bolt">
+    **Use lexa-x1**
+    
+    Best for applications requiring:
+    - Fast response times
+    - High request throughput
+    - Simple text tasks
+    - Cost efficiency
+  </Card>
+  
+  <Card title="Quality Priority" icon="star">
+    **Use lexa-rho**
+    
+    Best for applications requiring:
+    - Complex reasoning
+    - Detailed analysis
+    - Long-form content
+    - Code generation
+  </Card>
+  
+  <Card title="Multimodal Tasks" icon="image">
+    **Use lexa-mml**
+    
+    Best for applications requiring:
+    - Image understanding
+    - Visual content analysis
+    - General purpose tasks
+    - Balanced performance
+  </Card>
+  
+  <Card title="Professional Writing" icon="linkedin">
+    **Use linkedin-post-writer**
+    
+    Best for applications requiring:
+    - LinkedIn content
+    - Professional posts
+    - Engaging copy
+    - Social media content
+  </Card>
+</CardGroup>
+
+## Listing Available Models
+
+You can programmatically retrieve the list of available models:
+
+```javascript
+import Lexa from '@robilabs/lexa';
+
+const lexa = new Lexa('your-api-key');
+
+const models = await lexa.models();
+console.log(models.data);
+
+// Output:
+// [
+//   { id: 'lexa-mml', object: 'model', owned_by: 'lexa' },
+//   { id: 'lexa-x1', object: 'model', owned_by: 'lexa' },
+//   { id: 'lexa-rho', object: 'model', owned_by: 'lexa' },
+//   { id: 'linkedin-post-writer', object: 'model', owned_by: 'lexa' }
+// ]
+```
+
+## Model Specifications
+
+Detailed specifications for each model from the SDK source:
+
+```javascript
+const LEXA_MODELS = {
+  'lexa-mml': {
+    name: 'Lexa MML',
+    description: 'Lexa MML - Multimodal model with vision capabilities',
+    contextWindow: 8192,
+    maxTokens: 4096,
+  },
+  'lexa-x1': {
+    name: 'Lexa X1',
+    description: 'Lexa X1 - Fast, lightweight text-based model',
+    contextWindow: 4096,
+    maxTokens: 2048,
+  },
+  'lexa-rho': {
+    name: 'Lexa Rho',
+    description: 'Lexa Rho - Reasoning model with enhanced capabilities',
+    contextWindow: 16384,
+    maxTokens: 8192,
+  },
+};
+```
+
+## Use Case Examples
+
+<AccordionGroup>
+  <Accordion title="Chat Applications">
+    **Recommended: lexa-mml or lexa-x1**
+    
+    ```javascript
+    // Balanced performance for chat
+    const completion = await lexa.chat({
+      messages: conversationHistory,
+      model: 'lexa-mml',
+      temperature: 0.7,
+      max_tokens: 500
+    });
+    
+    // Fast responses for high-volume chat
+    const quickResponse = await lexa.chat({
+      messages: conversationHistory,
+      model: 'lexa-x1',
+      temperature: 0.6,
+      max_tokens: 200
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Code Generation">
+    **Recommended: lexa-rho**
+    
+    ```javascript
+    const completion = await lexa.chat({
+      messages: [
+        { 
+          role: 'system',
+          content: 'You are an expert programmer'
+        },
+        { 
+          role: 'user',
+          content: 'Write a React component for a todo list'
+        }
+      ],
+      model: 'lexa-rho',
+      temperature: 0.5,
+      max_tokens: 2000
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Content Creation">
+    **Recommended: lexa-rho or linkedin-post-writer**
+    
+    ```javascript
+    // Long-form content
+    const article = await lexa.chat({
+      messages: [
+        { role: 'user', content: 'Write an article about AI trends' }
+      ],
+      model: 'lexa-rho',
+      temperature: 0.8,
+      max_tokens: 4000
+    });
+    
+    // LinkedIn posts
+    const post = await lexa.chat({
+      messages: [
+        { role: 'user', content: 'Create a LinkedIn post about tech innovation' }
+      ],
+      model: 'linkedin-post-writer',
+      temperature: 0.9
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Analysis & Reasoning">
+    **Recommended: lexa-rho**
+    
+    ```javascript
+    const analysis = await lexa.chat({
+      messages: [
+        { 
+          role: 'user',
+          content: 'Analyze these quarterly results and provide insights: [data]'
+        }
+      ],
+      model: 'lexa-rho',
+      temperature: 0.6,
+      max_tokens: 3000
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Performance Tips
+
+<Note>
+**Context Management**: Larger context windows allow for longer conversations but consume more tokens. Monitor your usage and truncate history when appropriate.
+</Note>
+
+<Warning>
+**Token Limits**: Exceeding the model's context window will result in an error. Always stay within the specified limits:
+- lexa-x1: 4,096 tokens
+- lexa-mml: 8,192 tokens  
+- lexa-rho: 16,384 tokens
+</Warning>
+
+### Optimal Temperature Settings
+
+```javascript
+// Creative tasks (stories, brainstorming)
+temperature: 0.8 - 1.0
+
+// Balanced tasks (chat, general content)
+temperature: 0.7 - 0.8
+
+// Factual tasks (analysis, code)
+temperature: 0.5 - 0.7
+
+// Deterministic tasks (classification, extraction)
+temperature: 0.0 - 0.5
+```
+
+## Model Availability
+
+All models are available through the standard SDK interface:
+
+```javascript
+import Lexa from '@robilabs/lexa';
+
+const lexa = new Lexa('your-api-key');
+
+// Works with any model
+const completion = await lexa.chat({
+  messages: [{ role: 'user', content: 'Hello!' }],
+  model: 'lexa-mml' // or 'lexa-x1', 'lexa-rho', 'linkedin-post-writer'
+});
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Chat Completions" icon="message" href="/guides/chat-completions">
+    Learn how to use models for chat completions
+  </Card>
+  <Card title="Streaming" icon="water" href="/guides/streaming">
+    Stream responses for better UX
+  </Card>
+</CardGroup>

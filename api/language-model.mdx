@@ -1,0 +1,322 @@
+---
+title: Language Model
+description: LexaLanguageModel implementation for AI SDK compatibility
+---
+
+The `LexaLanguageModel` class implements the Vercel AI SDK's `LanguageModelV2` interface, providing full compatibility with AI SDK functions like `generateText()`, `streamText()`, and `generateObject()`.
+
+## LexaLanguageModel
+
+```typescript
+class LexaLanguageModel implements LanguageModelV2
+```
+
+### Constructor
+
+```typescript
+new LexaLanguageModel(
+  modelId: string,
+  settings: LexaProviderSettings,
+  config: LexaProviderConfig
+)
+```
+
+<ParamField path="modelId" type="string" required>
+  The model identifier (e.g., 'lexa-mml', 'lexa-x1', 'lexa-rho')
+</ParamField>
+
+<ParamField path="settings" type="LexaProviderSettings" required>
+  Provider settings object
+  
+  <ParamField path="temperature" type="number">
+    Default temperature for text generation
+  </ParamField>
+  
+  <ParamField path="maxOutputTokens" type="number">
+    Default maximum output tokens
+  </ParamField>
+  
+  <ParamField path="stopSequences" type="string[]">
+    Default stop sequences
+  </ParamField>
+  
+  <ParamField path="enableStreaming" type="boolean">
+    Whether to enable streaming by default
+  </ParamField>
+</ParamField>
+
+<ParamField path="config" type="LexaProviderConfig" required>
+  Provider configuration object
+  
+  <ParamField path="apiKey" type="string" required>
+    API key for authentication
+  </ParamField>
+  
+  <ParamField path="provider" type="string" required>
+    Provider name
+  </ParamField>
+  
+  <ParamField path="baseURL" type="string">
+    API base URL
+  </ParamField>
+  
+  <ParamField path="headers" type="Record<string, string>">
+    Default request headers
+  </ParamField>
+</ParamField>
+
+<Note>
+You typically don't instantiate this class directly. Use `provider.languageModel(modelId)` instead.
+</Note>
+
+### Properties
+
+<ResponseField name="specificationVersion" type="string">
+  Always 'v2' - indicates AI SDK v2 compatibility
+</ResponseField>
+
+<ResponseField name="provider" type="string">
+  Always 'lexa'
+</ResponseField>
+
+<ResponseField name="providerMetadata" type="object">
+  Provider-specific metadata
+  
+  <ResponseField name="lexa.model" type="string">
+    The model ID being used
+  </ResponseField>
+  
+  <ResponseField name="lexa.baseURL" type="string">
+    The API base URL
+  </ResponseField>
+</ResponseField>
+
+## Methods
+
+### doGenerate()
+
+Performs a non-streaming generation request.
+
+```typescript
+async doGenerate(options: LanguageModelV2CallOptions): Promise<{
+  content: LanguageModelV2Content[];
+  finishReason: LanguageModelV2FinishReason;
+  usage: LanguageModelV2Usage;
+  providerMetadata?: Record<string, Record<string, unknown>>;
+  warnings: LanguageModelV2CallWarning[];
+}>
+```
+
+<ParamField path="options" type="LanguageModelV2CallOptions" required>
+  Call options from the AI SDK
+  
+  <ParamField path="prompt" type="LanguageModelV2Prompt" required>
+    The prompt messages
+  </ParamField>
+  
+  <ParamField path="temperature" type="number">
+    Temperature override
+  </ParamField>
+  
+  <ParamField path="maxOutputTokens" type="number">
+    Max tokens override
+  </ParamField>
+  
+  <ParamField path="tools" type="Array">
+    Tool definitions for function calling
+  </ParamField>
+  
+  <ParamField path="toolChoice" type="'auto' | 'none' | object">
+    Tool selection strategy
+  </ParamField>
+  
+  <ParamField path="abortSignal" type="AbortSignal">
+    Signal to abort the request
+  </ParamField>
+</ParamField>
+
+#### Response
+
+<ResponseField name="content" type="LanguageModelV2Content[]" required>
+  Array of content parts (text, tool calls, etc.)
+</ResponseField>
+
+<ResponseField name="finishReason" type="LanguageModelV2FinishReason" required>
+  Why the generation stopped: 'stop', 'length', 'tool-calls', or 'unknown'
+</ResponseField>
+
+<ResponseField name="usage" type="LanguageModelV2Usage" required>
+  Token usage information
+  
+  <ResponseField name="inputTokens" type="number">
+    Prompt tokens
+  </ResponseField>
+  
+  <ResponseField name="outputTokens" type="number">
+    Completion tokens
+  </ResponseField>
+  
+  <ResponseField name="totalTokens" type="number">
+    Total tokens
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="warnings" type="LanguageModelV2CallWarning[]" required>
+  Any warnings from the generation
+</ResponseField>
+
+<ResponseField name="providerMetadata" type="Record<string, Record<string, unknown>>">
+  Provider-specific metadata
+</ResponseField>
+
+### doStream()
+
+Performs a streaming generation request.
+
+```typescript
+async doStream(options: LanguageModelV2CallOptions): Promise<{
+  stream: ReadableStream<LanguageModelV2StreamPart>;
+}>
+```
+
+<ParamField path="options" type="LanguageModelV2CallOptions" required>
+  Call options (same as doGenerate)
+</ParamField>
+
+<ResponseField name="stream" type="ReadableStream<LanguageModelV2StreamPart>" required>
+  A readable stream emitting text deltas and other events
+</ResponseField>
+
+## Usage with AI SDK
+
+The `LexaLanguageModel` is designed to work seamlessly with Vercel AI SDK functions:
+
+### generateText
+
+```typescript
+import { generateText } from 'ai';
+import { createLexaProvider } from 'lexa-js-sdk';
+
+const provider = createLexaProvider({
+  apiKey: 'your-api-key',
+  provider: 'lexa',
+});
+
+const model = provider.languageModel('lexa-mml');
+
+const { text } = await generateText({
+  model,
+  prompt: 'Explain quantum computing in simple terms',
+});
+
+console.log(text);
+```
+
+### streamText
+
+```typescript
+import { streamText } from 'ai';
+import { createLexaProvider } from 'lexa-js-sdk';
+
+const provider = createLexaProvider({
+  apiKey: 'your-api-key',
+  provider: 'lexa',
+});
+
+const model = provider.languageModel('lexa-mml');
+
+const { textStream } = await streamText({
+  model,
+  prompt: 'Write a short story about a robot',
+});
+
+for await (const chunk of textStream) {
+  process.stdout.write(chunk);
+}
+```
+
+### generateObject
+
+```typescript
+import { generateObject } from 'ai';
+import { createLexaProvider } from 'lexa-js-sdk';
+import { z } from 'zod';
+
+const provider = createLexaProvider({
+  apiKey: 'your-api-key',
+  provider: 'lexa',
+});
+
+const model = provider.languageModel('lexa-mml');
+
+const { object } = await generateObject({
+  model,
+  schema: z.object({
+    name: z.string(),
+    age: z.number(),
+    email: z.string().email(),
+  }),
+  prompt: 'Generate a user profile for John Doe, 30 years old',
+});
+
+console.log(object);
+```
+
+### Tool Calling
+
+```typescript
+import { generateText } from 'ai';
+import { createLexaProvider } from 'lexa-js-sdk';
+import { z } from 'zod';
+
+const provider = createLexaProvider({
+  apiKey: 'your-api-key',
+  provider: 'lexa',
+});
+
+const model = provider.languageModel('lexa-mml');
+
+const { text } = await generateText({
+  model,
+  prompt: 'What is the weather in San Francisco?',
+  tools: {
+    getWeather: {
+      description: 'Get the weather for a location',
+      parameters: z.object({
+        location: z.string().describe('The city name'),
+      }),
+      execute: async ({ location }) => {
+        // Call weather API
+        return { temperature: 72, condition: 'sunny' };
+      },
+    },
+  },
+});
+
+console.log(text);
+```
+
+## Error Handling
+
+The model throws AI SDK-compatible errors:
+
+- `TooManyRequestsError` - When rate limited (HTTP 429)
+- `APICallError` - For other API errors
+
+```typescript
+import { generateText } from 'ai';
+import { TooManyRequestsError, APICallError } from '@ai-sdk/provider-utils';
+
+try {
+  const { text } = await generateText({
+    model,
+    prompt: 'Hello',
+  });
+} catch (error) {
+  if (error instanceof TooManyRequestsError) {
+    console.log('Rate limited. Retry after:', error.retryAfter);
+  } else if (error instanceof APICallError) {
+    console.log('API error:', error.statusCode, error.message);
+  }
+}
+```

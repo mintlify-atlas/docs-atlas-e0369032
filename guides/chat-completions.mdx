@@ -1,0 +1,247 @@
+---
+title: Chat Completions
+description: Learn how to create chat completions with the Lexa JS SDK, including basic usage, system messages, multi-turn conversations, and parameters
+---
+
+## Overview
+
+The Lexa SDK provides a simple and intuitive interface for creating chat completions. The API follows an OpenAI-style design, making it easy to integrate into your applications.
+
+## Basic Chat Completion
+
+The simplest way to create a chat completion is to send a single user message:
+
+```javascript
+import Lexa from '@robilabs/lexa';
+
+const lexa = new Lexa('your-api-key');
+
+const completion = await lexa.chat({
+  messages: [
+    { role: 'user', content: 'Hello! Can you tell me a joke?' }
+  ],
+  model: 'lexa-mml',
+  temperature: 0.7,
+  max_tokens: 100
+});
+
+console.log(completion.choices[0].message.content);
+```
+
+## System Messages
+
+System messages help set the behavior and context for the assistant. They are processed before user messages and guide how the model responds:
+
+```javascript
+const completion = await lexa.chat({
+  messages: [
+    { 
+      role: 'system', 
+      content: 'You are a helpful assistant that speaks like a pirate.' 
+    },
+    { 
+      role: 'user', 
+      content: 'What is the weather like today?' 
+    }
+  ],
+  model: 'lexa-x1',
+  temperature: 0.9
+});
+
+console.log(completion.choices[0].message.content);
+// Expected output: Pirate-style weather response
+```
+
+<Note>
+System messages are optional but highly recommended for controlling the assistant's behavior and tone.
+</Note>
+
+## Multi-Turn Conversations
+
+To maintain context across multiple exchanges, include the conversation history in the messages array:
+
+```javascript
+const conversationHistory = [
+  { role: 'system', content: 'You are a helpful coding assistant.' },
+  { role: 'user', content: 'What is a closure in JavaScript?' },
+  { role: 'assistant', content: 'A closure is a function that has access to variables in its outer scope...' },
+  { role: 'user', content: 'Can you show me an example?' }
+];
+
+const completion = await lexa.chat({
+  messages: conversationHistory,
+  model: 'lexa-rho',
+  temperature: 0.7
+});
+
+console.log(completion.choices[0].message.content);
+```
+
+<Accordion title="Managing conversation context">
+As conversations grow longer, they consume more tokens. Consider:
+- Truncating old messages to stay within context limits
+- Summarizing earlier parts of the conversation
+- Using models with larger context windows (like `lexa-rho` with 16,384 tokens)
+</Accordion>
+
+## Parameters
+
+The `chat()` method accepts several parameters to control the generation:
+
+<ParamField path="messages" type="array" required>
+  Array of message objects with `role` and `content` properties. Roles can be `system`, `user`, or `assistant`.
+</ParamField>
+
+<ParamField path="model" type="string" default="lexa-mml">
+  The model to use for completion. Available options: `lexa-mml`, `lexa-x1`, `lexa-rho`, `linkedin-post-writer`.
+</ParamField>
+
+<ParamField path="temperature" type="number" default="0.7">
+  Controls randomness in the output (0-2). Lower values make output more focused and deterministic, higher values make it more creative.
+</ParamField>
+
+<ParamField path="max_tokens" type="number">
+  Maximum number of tokens to generate in the completion. Helps control response length and costs.
+</ParamField>
+
+<ParamField path="stream" type="boolean" default="false">
+  Whether to stream the response as it's generated. See [Streaming](/guides/streaming) for details.
+</ParamField>
+
+## Complete Example
+
+Here's a complete example demonstrating various parameters:
+
+<CodeGroup>
+
+```javascript Basic
+import Lexa from '@robilabs/lexa';
+
+const lexa = new Lexa(process.env.LEXA_API_KEY);
+
+const completion = await lexa.chat({
+  messages: [
+    { role: 'user', content: 'Hello! Can you tell me a joke?' }
+  ],
+  model: 'lexa-mml',
+  temperature: 0.7,
+  max_tokens: 100
+});
+
+console.log('Response:', completion.choices[0].message.content);
+console.log('Usage:', completion.usage);
+```
+
+```javascript With System Message
+import Lexa from '@robilabs/lexa';
+
+const lexa = new Lexa(process.env.LEXA_API_KEY);
+
+const completion = await lexa.chat({
+  messages: [
+    { 
+      role: 'system', 
+      content: 'You are a helpful assistant that speaks like a pirate.' 
+    },
+    { 
+      role: 'user', 
+      content: 'What is the weather like today?' 
+    }
+  ],
+  model: 'lexa-x1',
+  temperature: 0.9
+});
+
+console.log('Response:', completion.choices[0].message.content);
+```
+
+```javascript Multi-Turn
+import Lexa from '@robilabs/lexa';
+
+const lexa = new Lexa(process.env.LEXA_API_KEY);
+
+const messages = [
+  { role: 'system', content: 'You are a coding assistant.' },
+  { role: 'user', content: 'Explain promises in JavaScript' }
+];
+
+const completion = await lexa.chat({
+  messages,
+  model: 'lexa-rho',
+  temperature: 0.7
+});
+
+// Add assistant response to history
+messages.push({
+  role: 'assistant',
+  content: completion.choices[0].message.content
+});
+
+// Continue conversation
+messages.push({
+  role: 'user',
+  content: 'Can you show me an example?'
+});
+
+const followUp = await lexa.chat({
+  messages,
+  model: 'lexa-rho'
+});
+
+console.log(followUp.choices[0].message.content);
+```
+
+</CodeGroup>
+
+## Response Format
+
+The completion response follows this structure:
+
+```javascript
+{
+  choices: [{
+    message: {
+      role: 'assistant',
+      content: 'The generated response text'
+    },
+    finish_reason: 'stop' // or 'length', 'tool_calls'
+  }],
+  usage: {
+    prompt_tokens: 25,
+    completion_tokens: 50,
+    total_tokens: 75
+  }
+}
+```
+
+<Warning>
+Always handle errors when making API calls. Network issues or invalid parameters can cause requests to fail.
+</Warning>
+
+## Error Handling
+
+Wrap your chat completions in try-catch blocks to handle errors gracefully:
+
+```javascript
+try {
+  const completion = await lexa.chat({
+    messages: [{ role: 'user', content: 'Hello!' }],
+    model: 'lexa-mml'
+  });
+  
+  console.log(completion.choices[0].message.content);
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Streaming" icon="water" href="/guides/streaming">
+    Learn how to stream responses in real-time
+  </Card>
+  <Card title="Models" icon="microchip" href="/guides/models">
+    Explore available models and their capabilities
+  </Card>
+</CardGroup>

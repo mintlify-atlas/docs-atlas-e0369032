@@ -1,0 +1,255 @@
+---
+title: AI SDK Integration
+description: Learn how to use LexaProvider with AI SDK v2 for advanced language model capabilities
+---
+
+The Lexa JS SDK is built on top of the [AI SDK v2](https://sdk.vercel.ai/docs) by Vercel, providing seamless integration with the AI SDK ecosystem while giving you access to Lexa's powerful language models.
+
+## Provider Architecture
+
+The Lexa SDK implements the `ProviderV2` interface from AI SDK, which means you can use it with all AI SDK utilities and patterns you're familiar with.
+
+### LexaProvider Class
+
+The `LexaProvider` class is the main entry point for integrating Lexa models with AI SDK:
+
+```typescript
+import { LexaProvider } from '@robilabs/lexa';
+
+const provider = new LexaProvider(
+  {
+    apiKey: process.env.LEXA_API_KEY,
+    provider: 'lexa',
+    baseURL: 'https://www.lexa.chat/api', // optional
+  },
+  {
+    temperature: 0.7, // optional settings
+    maxOutputTokens: 1000,
+  }
+);
+```
+
+### createLexaProvider Factory
+
+For easier instantiation, use the factory function:
+
+```typescript
+import { createLexaProvider } from '@robilabs/lexa';
+
+const provider = createLexaProvider(
+  {
+    apiKey: process.env.LEXA_API_KEY,
+    provider: 'lexa',
+  },
+  {
+    temperature: 0.7,
+  }
+);
+```
+
+## Getting Language Models
+
+Once you have a provider instance, you can access language models using the `languageModel()` method:
+
+```typescript
+const model = provider.languageModel('lexa-mml');
+```
+
+### Available Models
+
+The SDK includes predefined model configurations accessible via `LEXA_MODELS`:
+
+<CodeGroup>
+```typescript lexa-mml
+import { LEXA_MODELS } from '@robilabs/lexa';
+
+// Multimodal model with vision capabilities
+const mmlConfig = LEXA_MODELS['lexa-mml'];
+// {
+//   name: 'Lexa MML',
+//   description: 'Lexa MML - Multimodal model with vision capabilities',
+//   contextWindow: 8192,
+//   maxTokens: 4096,
+// }
+```
+
+```typescript lexa-x1
+// Fast, lightweight text-based model
+const x1Config = LEXA_MODELS['lexa-x1'];
+// {
+//   name: 'Lexa X1',
+//   description: 'Lexa X1 - Fast, lightweight text-based model',
+//   contextWindow: 4096,
+//   maxTokens: 2048,
+// }
+```
+
+```typescript lexa-rho
+// Reasoning model with enhanced capabilities
+const rhoConfig = LEXA_MODELS['lexa-rho'];
+// {
+//   name: 'Lexa Rho',
+//   description: 'Lexa Rho - Reasoning model with enhanced capabilities',
+//   contextWindow: 16384,
+//   maxTokens: 8192,
+// }
+```
+</CodeGroup>
+
+## Using with AI SDK Methods
+
+The `LexaLanguageModel` class implements `LanguageModelV2`, providing both generation and streaming capabilities:
+
+### Text Generation
+
+```typescript
+const model = provider.languageModel('lexa-mml');
+
+const result = await model.doGenerate({
+  prompt: [
+    {
+      role: 'user',
+      content: [{ type: 'text', text: 'Hello, how are you?' }],
+    },
+  ],
+  temperature: 0.7,
+  maxOutputTokens: 1000,
+});
+
+console.log(result.content); // Array of content parts
+console.log(result.usage); // Token usage statistics
+console.log(result.finishReason); // Why generation stopped
+```
+
+### Streaming
+
+```typescript
+const model = provider.languageModel('lexa-rho');
+
+const { stream } = await model.doStream({
+  prompt: [
+    {
+      role: 'user',
+      content: [{ type: 'text', text: 'Write a short story.' }],
+    },
+  ],
+  temperature: 0.8,
+});
+
+for await (const chunk of stream) {
+  if (chunk.type === 'text-delta') {
+    process.stdout.write(chunk.delta);
+  } else if (chunk.type === 'finish') {
+    console.log('\nUsage:', chunk.usage);
+  }
+}
+```
+
+## Tool Calling
+
+Lexa models support tool calling through the AI SDK interface:
+
+```typescript
+const model = provider.languageModel('lexa-mml');
+
+const result = await model.doGenerate({
+  prompt: [
+    {
+      role: 'user',
+      content: [{ type: 'text', text: 'What is the weather in San Francisco?' }],
+    },
+  ],
+  tools: [
+    {
+      name: 'get_weather',
+      description: 'Get the current weather for a location',
+      parameters: {
+        type: 'object',
+        properties: {
+          location: {
+            type: 'string',
+            description: 'The city and state, e.g. San Francisco, CA',
+          },
+        },
+        required: ['location'],
+      },
+    },
+  ],
+  toolChoice: 'auto',
+});
+
+// Check for tool calls in the response
+for (const content of result.content) {
+  if (content.type === 'tool-call') {
+    console.log('Tool:', content.toolName);
+    console.log('Arguments:', content.input);
+  }
+}
+```
+
+## Multimodal Support
+
+The `lexa-mml` model supports image inputs:
+
+```typescript
+const model = provider.languageModel('lexa-mml');
+
+const result = await model.doGenerate({
+  prompt: [
+    {
+      role: 'user',
+      content: [
+        { type: 'text', text: 'What is in this image?' },
+        { 
+          type: 'file', 
+          data: 'data:image/jpeg;base64,...', // Base64 encoded image
+          mimeType: 'image/jpeg' 
+        },
+      ],
+    },
+  ],
+});
+```
+
+## Provider Metadata
+
+The language model exposes metadata about the provider:
+
+```typescript
+const model = provider.languageModel('lexa-mml');
+
+console.log(model.providerMetadata);
+// {
+//   lexa: {
+//     model: 'lexa-mml',
+//     baseURL: 'https://www.lexa.chat/api',
+//   }
+// }
+```
+
+## Not Yet Supported
+
+<Warning>
+The following AI SDK features are not yet supported by LexaProvider:
+- Embedding models (`textEmbeddingModel()`)
+- Image generation models (`imageModel()`)
+</Warning>
+
+Attempting to use these methods will throw an error:
+
+```typescript
+// This will throw an error
+const embeddings = provider.textEmbeddingModel('some-model');
+// Error: Text embedding models are not yet supported by LexaProvider
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/advanced/configuration">
+    Learn about all configuration options for LexaProvider
+  </Card>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/advanced/error-handling">
+    Understand error types and how to handle them
+  </Card>
+</CardGroup>
