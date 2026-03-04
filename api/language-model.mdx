@@ -195,7 +195,7 @@ The `LexaLanguageModel` is designed to work seamlessly with Vercel AI SDK functi
 
 ```typescript
 import { generateText } from 'ai';
-import { createLexaProvider } from 'lexa-js-sdk';
+import { createLexaProvider } from '@robilabs/lexa';
 
 const provider = createLexaProvider({
   apiKey: 'your-api-key',
@@ -216,7 +216,7 @@ console.log(text);
 
 ```typescript
 import { streamText } from 'ai';
-import { createLexaProvider } from 'lexa-js-sdk';
+import { createLexaProvider } from '@robilabs/lexa';
 
 const provider = createLexaProvider({
   apiKey: 'your-api-key',
@@ -239,7 +239,7 @@ for await (const chunk of textStream) {
 
 ```typescript
 import { generateObject } from 'ai';
-import { createLexaProvider } from 'lexa-js-sdk';
+import { createLexaProvider } from '@robilabs/lexa';
 import { z } from 'zod';
 
 const provider = createLexaProvider({
@@ -266,7 +266,7 @@ console.log(object);
 
 ```typescript
 import { generateText } from 'ai';
-import { createLexaProvider } from 'lexa-js-sdk';
+import { createLexaProvider } from '@robilabs/lexa';
 import { z } from 'zod';
 
 const provider = createLexaProvider({
