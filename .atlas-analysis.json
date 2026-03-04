@@ -1,0 +1,85 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "Lexa JS SDK",
+  "projectDescription": "JavaScript SDK for Lexa AI with OpenAI-compatible API and AI SDK v2 provider support",
+  "theme": "palm",
+  "primaryColor": "#6366f1",
+  "lightColor": "#818cf8",
+  "darkColor": "#4f46e5",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Usage Guides",
+            "pages": [
+              "guides/chat-completions",
+              "guides/streaming",
+              "guides/models",
+              "guides/migration"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "advanced/ai-sdk-integration",
+              "advanced/configuration",
+              "advanced/error-handling"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Core API",
+            "pages": [
+              "api/lexa-class",
+              "api/provider",
+              "api/language-model"
+            ]
+          },
+          {
+            "group": "Types",
+            "pages": [
+              "api/types"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "OpenAI-compatible chat completions API",
+    "AI SDK v2 provider implementation",
+    "Real-time streaming support",
+    "Multiple Lexa models (mml, x1, rho)",
+    "Full TypeScript support",
+    "Multimodal capabilities (text and vision)"
+  ],
+  "publicApiSurface": [
+    "Lexa (default export)",
+    "LexaProvider",
+    "createLexaProvider",
+    "LexaLanguageModel",
+    "LEXA_MODELS",
+    "LexaProviderConfig",
+    "LexaProviderSettings",
+    "LexaMessage",
+    "LexaMessageContent",
+    "LexaTool",
+    "LexaRequest",
+    "LexaResponse",
+    "LexaStreamChunk"
+  ]
+}
